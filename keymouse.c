@@ -4,12 +4,11 @@
 #include <string.h>
 #include "ghdb.h"
 
-int keymouse()
+int keymouse(struct FIELD fields[], int num_fields)
 {
 	int button_alt = 0;
 	int button_ctrl = 0;
 	int button_shift = 0;
-	
 	MEVENT mevent = { 0, 0, 0, 0, 0 };
 	(void) getmouse(&mevent);
 
@@ -38,6 +37,17 @@ int keymouse()
 	if ((mevent.bstate & BUTTON1_CLICKED) != 0)
 	{
 		fprintf(stderr, "DJB: %s\n", "BUTTON1_CLICKED");
+		for (int i=0; i<num_fields; i++)
+		{
+			if (mevent.y == fields[i].value.y &&
+				mevent.x >= fields[i].value.x && 
+				mevent.x <= fields[i].value.x + fields[i].value.l)
+			{
+				(void) move(mevent.y, mevent.x);
+				(void) attron(fields[i].value.fac);
+			}
+		}
+		return 0;
 	}
 	if ((mevent.bstate & BUTTON1_DOUBLE_CLICKED) != 0)
 	{

@@ -27,7 +27,10 @@ int fldlen(const int y, const int x, const int l)
 	return 0;
 }
 
-char *mvfld(const int y, const int x, const int l)
+/*
+	Return the field value from the screen buffer
+*/
+char *getfld(const int y, const int x, const int l)
 {
 	int x1 = x;
 	int x2 = x + l;
@@ -38,20 +41,20 @@ char *mvfld(const int y, const int x, const int l)
 		exit(EXIT_FAILURE);
 	}
 	char *f = field;
-	//fprintf(stderr, "*mvfld:      y: %d\n", y);
-	//fprintf(stderr, "*mvfld:      x: %d\n", x);
-	//fprintf(stderr, "*mvfld:      l: %d\n", l);
-	//fprintf(stderr, "*mvfld:     x1: %d\n", x1);
-	//fprintf(stderr, "*mvfld:     x2: %d\n", x2);
+	//fprintf(stderr, "*getfld:      y: %d\n", y);
+	//fprintf(stderr, "*getfld:      x: %d\n", x);
+	//fprintf(stderr, "*getfld:      l: %d\n", l);
+	//fprintf(stderr, "*getfld:     x1: %d\n", x1);
+	//fprintf(stderr, "*getfld:     x2: %d\n", x2);
 	for (x1; x1<x2; x1++) 
 	{
 		int c = (mvinch(y, x1) & A_CHARTEXT);
-		fprintf(stderr, "*mvfld:     x1: %d\n", x1);
-		fprintf(stderr, "*mvfld:      c: %d\n", c);
+		fprintf(stderr, "*getfld:     x1: %d\n", x1);
+		fprintf(stderr, "*getfld:      c: %d\n", c);
 		*(f++) = c;
 	}
 	*(f) = 0;
-	//fprintf(stderr, "*mvfld:fallthru: %s\n\n", field);
+	//fprintf(stderr, "*getfld:fallthru: %s\n\n", field);
 	return field;
 }
 
@@ -74,7 +77,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct
 						cursor.x >= fields[i].value.x && 
 						cursor.x <= fields[i].value.x + fields[i].value.l)
 					{
-						char *p = mvfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
+						char *p = getfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
 						strcpy(fields[i].value.c_value, p);
 						free(p);
 						fprintf(stderr, "KEY_TAB: %s\n", fields[i].value.c_value);
@@ -135,10 +138,34 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct
 	
 			case KEY_LEFT:
 				fprintf(stderr, "keyboard: %s\n", "KEY_LEFT");
+				for (int i=0; i<num_fields; i++)
+				{
+					if (cursor.y == fields[i].value.y &&
+						cursor.x >= fields[i].value.x && 
+						cursor.x <= fields[i].value.x + fields[i].value.l)
+					{
+						(void) move(cursor.y, --cursor.x);
+						(void) attron(fields[i].value.fac);
+						//(void) printw("%c", 32);
+						(void) move(cursor.y, cursor.x);
+					}
+				}
 				break;
 	
 			case KEY_RIGHT:
 				fprintf(stderr, "keyboard: %s\n", "KEY_RIGHT");
+				for (int i=0; i<num_fields; i++)
+				{
+					if (cursor.y == fields[i].value.y &&
+						cursor.x >= fields[i].value.x && 
+						cursor.x <  fields[i].value.x + fields[i].value.l)
+					{
+						(void) move(cursor.y, ++cursor.x);
+						(void) attron(fields[i].value.fac);
+						//(void) printw("%c", 32);
+						//(void) move(cursor.y, cursor.x);
+					}
+				}
 				break;
 	
 			case KEY_HOME:
@@ -235,7 +262,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct
 						cursor.x >= fields[i].value.x && 
 						cursor.x <= fields[i].value.x + fields[i].value.l)
 					{
-						char *p = mvfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
+						char *p = getfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
 						strcpy(fields[i].value.c_value, p);
 						free(p);
 						fprintf(stderr, "KEY_F(16): %s\n", fields[i].value.c_value);
@@ -381,7 +408,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct
 						cursor.x >= fields[i].value.x && 
 						cursor.x <= fields[i].value.x + fields[i].value.l)
 					{
-						char *p = mvfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
+						char *p = getfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
 						strcpy(fields[i].value.c_value, p);
 						free(p);
 						fprintf(stderr, "KEY_BTAB: %s\n", fields[i].value.c_value);
@@ -630,7 +657,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct
 	
 			case KEY_MOUSE:
 				fprintf(stderr, "keyboard: %s\n", "KEY_MOUSE");
-				(void) keymouse();
+				(void) keymouse(fields, num_fields);
 				break;
 	
 			case KEY_RESIZE:

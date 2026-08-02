@@ -29,5 +29,5 @@ struct CURSOR {
 
 int terminal();
 int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct CURSOR cursor);
-int keymouse();
+int keymouse(struct FIELD fields[], int num_fields);
 int database();
