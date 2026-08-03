@@ -4,31 +4,26 @@
 #include <string.h>
 #include "ghdb.h"
 
+/*
+  Get the length of the filed value from the screen buffer
+*/
 int fldlen(const int y, const int x, const int l) 
 {
 	int x1 = x;
 	int x2 = x + l;
-	//fprintf(stderr, "fldlen:      y: %d\n", y);
-	//fprintf(stderr, "fldlen:      x: %d\n", x);
-	//fprintf(stderr, "fldlen:      l: %d\n", l);
-	//fprintf(stderr, "fldlen:     x1: %d\n", x1);
-	//fprintf(stderr, "fldlen:     x2: %d\n", x2);
 	for (x2; x2 >= x1; x2--)
 	{
 		int c = (mvinch(y, x2) & A_CHARTEXT);
-		//fprintf(stderr, "fldlen:     x2: %d\n", x2);
-		//fprintf(stderr, "fldlen:      c: %d\n", c);
 		if (c > 32) {
 			fprintf(stderr, "fldlen:      r: %d\n", x2 - x1 + 1);
 			return x2 - x1 + 1;
 		}
 	}
-	//fprintf(stderr, "fldlen:fallthru: %d\n\n", 0);
 	return 0;
 }
 
 /*
-	Return the field value from the screen buffer
+  Return the field value from the screen buffer
 */
 char *getfld(const int y, const int x, const int l)
 {
@@ -41,11 +36,6 @@ char *getfld(const int y, const int x, const int l)
 		exit(EXIT_FAILURE);
 	}
 	char *f = field;
-	//fprintf(stderr, "*getfld:      y: %d\n", y);
-	//fprintf(stderr, "*getfld:      x: %d\n", x);
-	//fprintf(stderr, "*getfld:      l: %d\n", l);
-	//fprintf(stderr, "*getfld:     x1: %d\n", x1);
-	//fprintf(stderr, "*getfld:     x2: %d\n", x2);
 	for (x1; x1<x2; x1++) 
 	{
 		int c = (mvinch(y, x1) & A_CHARTEXT);
@@ -54,7 +44,6 @@ char *getfld(const int y, const int x, const int l)
 		*(f++) = c;
 	}
 	*(f) = 0;
-	//fprintf(stderr, "*getfld:fallthru: %s\n\n", field);
 	return field;
 }
 

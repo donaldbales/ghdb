@@ -4,6 +4,35 @@
 #include <string.h>
 #include "ghdb.h"
 
+char *lpad(char *in, char c, int outlen)
+{
+	int i = 0;
+	int inlen = strlen(in);
+	char *out;
+	if (outlen < 0)
+	{
+		return "";
+	}
+	out = malloc(outlen + 1);
+	if (out == NULL)
+	{
+		fprintf(stderr, "lpad: Failed to allocate memory.\n");
+		exit(1);
+	}
+	for (i = 0; i<outlen; i++)
+	{
+		*(out+i) = c;
+		//printf("lpad: i=%d out=\"%s\"\n", i, out);
+	}
+	*(out+outlen) = '\0';
+	for (i = outlen - 1, --inlen; i >= 0 && inlen >= 0; --i, --inlen)
+	{
+		*(out+i) = *(in+inlen);
+		//printf("lpad: inlen=%d in=\"%s\" i=%d out=\"%s\"\n", inlen, in, i, out);
+	}
+	return out;
+}
+
 int terminal()
 {
 	mmask_t all = (mmask_t) ALL_MOUSE_EVENTS;
@@ -33,8 +62,7 @@ int terminal()
 	fields[0].label.x = 1;
 	fields[0].label.l = 20;
 	fields[0].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	//                                123456789012345678901234567890
-	strncpy(fields[0].label.l_value, "          First Name", fields[0].label.l);
+	strncpy(fields[0].label.l_value, lpad("First Name", ' ', 20), fields[0].label.l);
 	fields[0].value.y = fields[0].label.y;
 	fields[0].value.x = fields[0].label.x + fields[0].label.l + 1;
 	fields[0].value.l = 30;
@@ -45,8 +73,7 @@ int terminal()
 	fields[1].label.x = 1;
 	fields[1].label.l = 20;
 	fields[1].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	//                                123456789012345678901234567890
-	strncpy(fields[1].label.l_value, "           Last Name", fields[1].label.l);
+	strncpy(fields[1].label.l_value, lpad("Last Name", ' ', 20), fields[1].label.l);
 	fields[1].value.y = fields[1].label.y;
 	fields[1].value.x = fields[1].label.x + fields[1].label.l + 1;
 	fields[1].value.l = 30;
@@ -57,8 +84,7 @@ int terminal()
 	fields[2].label.x = 1;
 	fields[2].label.l = 20;
 	fields[2].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	//                                123456789012345678901234567890
-	strncpy(fields[2].label.l_value, "          Birth Date", fields[2].label.l);
+	strncpy(fields[2].label.l_value, lpad("Birth Date", ' ', 20), fields[2].label.l);
 	fields[2].value.y = fields[2].label.y;
 	fields[2].value.x = fields[2].label.x + fields[2].label.l + 1;
 	fields[2].value.l = 10;
@@ -69,8 +95,7 @@ int terminal()
 	fields[3].label.x = 1;
 	fields[3].label.l = 20;
 	fields[3].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	//                                123456789012345678901234567890
-	strncpy(fields[3].label.l_value, "        Phone Number", fields[3].label.l);
+	strncpy(fields[3].label.l_value, lpad("Phone Number", ' ', 20), fields[3].label.l);
 	fields[3].value.y = fields[3].label.y;
 	fields[3].value.x = fields[3].label.x + fields[3].label.l + 1;
 	fields[3].value.l = 15;
@@ -81,8 +106,7 @@ int terminal()
 	fields[4].label.x = 1;
 	fields[4].label.l = 20;
 	fields[4].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	//                                123456789012345678901234567890
-	strncpy(fields[4].label.l_value, "       Email Address", fields[4].label.l);
+	strncpy(fields[4].label.l_value, lpad("Email Address", ' ', 20), fields[4].label.l);
 	fields[4].value.y = fields[4].label.y;
 	fields[4].value.x = fields[4].label.x + fields[4].label.l + 1;
 	fields[4].value.l = 60;
