@@ -14,7 +14,8 @@ gcc ghdb.o terminal.o keyboard.o keymouse.o -lncursesw_g -o ghdb
 rm -f trace; env NCURSES_TRACE=1 ghdb 2>ghdb.err; cat ghdb.err
 */
 
-/* TODO?
+/*
+    TODO?
     Use left or right arrow keys to insert text in a field
     Save the binary data to a file
     Read the binary data from a file

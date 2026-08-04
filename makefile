@@ -20,4 +20,3 @@ ghdb.o : ghdb.h ghdb.c
 
 .PHONY run : ghdb
 	rm -f trace; env NCURSES_TRACE=1 ghdb 2>ghdb.err; cat ghdb.err
-	
