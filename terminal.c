@@ -4,7 +4,7 @@
 #include <string.h>
 #include "ghdb.h"
 
-char *lpad(char *in, char c, int outlen)
+char *lpad(char *in, int outlen, char c)
 {
 	int i = 0;
 	int inlen = strlen(in);
@@ -62,7 +62,7 @@ int terminal()
 	fields[0].label.x = 1;
 	fields[0].label.l = 20;
 	fields[0].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	strncpy(fields[0].label.l_value, lpad("First Name", ' ', 20), fields[0].label.l);
+	strncpy(fields[0].label.l_value, lpad("First Name", 20, ' '), fields[0].label.l);
 	fields[0].value.y = fields[0].label.y;
 	fields[0].value.x = fields[0].label.x + fields[0].label.l + 1;
 	fields[0].value.l = 30;
@@ -73,7 +73,7 @@ int terminal()
 	fields[1].label.x = 1;
 	fields[1].label.l = 20;
 	fields[1].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	strncpy(fields[1].label.l_value, lpad("Last Name", ' ', 20), fields[1].label.l);
+	strncpy(fields[1].label.l_value, lpad("Last Name", 20, ' '), fields[1].label.l);
 	fields[1].value.y = fields[1].label.y;
 	fields[1].value.x = fields[1].label.x + fields[1].label.l + 1;
 	fields[1].value.l = 30;
@@ -84,7 +84,7 @@ int terminal()
 	fields[2].label.x = 1;
 	fields[2].label.l = 20;
 	fields[2].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	strncpy(fields[2].label.l_value, lpad("Birth Date", ' ', 20), fields[2].label.l);
+	strncpy(fields[2].label.l_value, lpad("Birth Date", 20, ' '), fields[2].label.l);
 	fields[2].value.y = fields[2].label.y;
 	fields[2].value.x = fields[2].label.x + fields[2].label.l + 1;
 	fields[2].value.l = 10;
@@ -95,7 +95,7 @@ int terminal()
 	fields[3].label.x = 1;
 	fields[3].label.l = 20;
 	fields[3].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	strncpy(fields[3].label.l_value, lpad("Phone Number", ' ', 20), fields[3].label.l);
+	strncpy(fields[3].label.l_value, lpad("Phone Number", 20, ' '), fields[3].label.l);
 	fields[3].value.y = fields[3].label.y;
 	fields[3].value.x = fields[3].label.x + fields[3].label.l + 1;
 	fields[3].value.l = 15;
@@ -106,7 +106,7 @@ int terminal()
 	fields[4].label.x = 1;
 	fields[4].label.l = 20;
 	fields[4].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	strncpy(fields[4].label.l_value, lpad("Email Address", ' ', 20), fields[4].label.l);
+	strncpy(fields[4].label.l_value, lpad("Email Address", 20, ' '), fields[4].label.l);
 	fields[4].value.y = fields[4].label.y;
 	fields[4].value.x = fields[4].label.x + fields[4].label.l + 1;
 	fields[4].value.l = 60;
