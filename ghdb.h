@@ -15,7 +15,7 @@ struct VALUE {
 	int l;
 	int fac;
 	char c_value[2001];
-	char o_value[2001];
+	char o_value[2001]; // Later use to deter,mine if a record has changed
 };
 
 struct UOM {
@@ -35,6 +35,27 @@ struct FIELD {
 struct CURSOR {
 	int y;
 	int x;
+};
+
+#define PLANT_NAME_FIELD      0
+#define LATIN_NAME_FIELD      1
+#define HEIGHT_FIELD          2
+#define WIDTH_FIELD           3
+#define PLANTING_DEPTH_FIELD  4
+
+#define PLANT_NAME_LENGTH    30
+#define LATIN_NAME_LENGTH    30
+#define HEIGHT_LENGTH         5
+#define WIDTH_LENGTH          5
+#define PLANTING_DEPTH_LENGTH 5
+
+struct RECORD
+{
+	char plant_name[PLANT_NAME_LENGTH + 1];
+	char latin_name[LATIN_NAME_LENGTH + 1];
+	char height[HEIGHT_LENGTH + 1];
+	char width[WIDTH_LENGTH + 1];
+	char planting_depth[PLANTING_DEPTH_LENGTH + 1];
 };
 
 //define                0x00000001 // PF1
@@ -71,8 +92,17 @@ struct CURSOR {
 #define DELETE_MODE     0x80000000
 
 int terminal();
-int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct CURSOR cursor);
+int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct CURSOR cursor, int action);
 int keymouse(struct FIELD fields[], int num_fields);
 int database();
+int formscrn(struct FIELD fields[], int num_fields);
+int ghdb_delete(struct RECORD *record);
+int ghdb_insert(struct RECORD *record);
+int ghdb_select(struct RECORD *record);
+int ghdb_update(struct RECORD *record);
+int ftor(struct FIELD fields[], int num_fields, struct RECORD *record);
+int rtof(struct FIELD fields[], int num_fields, struct RECORD *record);
+int init_record(struct RECORD *record);
+int xerror(char *message);
 
 #endif

@@ -3,8 +3,11 @@
 # rm -f trace; env NCURSES_TRACE=1 ghdb 2>ghdb.err; cat ghdb.err
 #
 
-ghdb : ghdb.o terminal.o keyboard.o keymouse.o database.o
-	gcc ghdb.o terminal.o keyboard.o keymouse.o database.o -l ncursesw_g -lgdbm -o ghdb
+ghdb : ghdb.o terminal.o keyboard.o keymouse.o database.o formscrn.o
+	gcc ghdb.o terminal.o keyboard.o keymouse.o database.o formscrn.o -l ncursesw_g -lgdbm -o ghdb
+
+formscrn.o : ghdb.h formscrn.c
+	gcc formscrn.c -c -g -Wall
 
 database.o : ghdb.h database.c
 	gcc database.c -c -g -Wall

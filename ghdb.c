@@ -1,3 +1,4 @@
+#include <gdbm.h>
 #include <ncurses.h>
 #include <signal.h>
 #include <stdlib.h>

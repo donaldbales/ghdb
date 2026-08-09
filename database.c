@@ -4,8 +4,6 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdlib.h>
-#include <string.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -81,14 +79,142 @@
 (16) Exit
 */
 
+void gdbf_close(GDBM_FILE gdbf)
+{
+	if (gdbm_close(gdbf) == 0)
+	{
+		gdbf = NULL;
+	}
+	else
+	{
+		fprintf(stderr, "can't close database: %s\n", gdbm_strerror (gdbm_errno));
+		exit(EXIT_FAILURE);
+	}
+	return;
+}
+
 void *ghdb_open() 
 {
 	static GDBM_FILE gdbf = NULL;
 	char* gdbf_filename = "ghdb.gbm"; 
-/*
+	if (gdbf == NULL)
+	{
+		gdbf = gdbm_open(gdbf_filename, 0, GDBM_WRCREAT, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH), NULL);
+	}
+	if (gdbf == NULL)
+	{
+		fprintf(stderr, "can't open database: %s\n", gdbm_strerror (gdbm_errno));
+		exit(EXIT_FAILURE);
+	}
+	return gdbf;
+}
+
+int ghdb_delete(struct RECORD *record)
+{
+
+	return 0;
+}
+
+int init_record(struct RECORD *record)
+{
+	for (int i=0; i<PLANT_NAME_LENGTH; i++)
+	{
+		record->plant_name[i]= ' ';
+	}
+	record->plant_name[PLANT_NAME_LENGTH] = '\0';
+
+	for (int i=0; i<LATIN_NAME_LENGTH; i++)
+	{
+		record->latin_name[i]= ' ';
+	}
+	record->latin_name[LATIN_NAME_LENGTH] = '\0';
+
+	for (int i=0; i<HEIGHT_LENGTH; i++)
+	{
+		record->height[i]= ' ';
+	}
+	record->height[HEIGHT_LENGTH] = '\0';
+
+	for (int i=0; i<WIDTH_LENGTH; i++)
+	{
+		record->width[i]= ' ';
+	}
+	record->width[WIDTH_LENGTH] = '\0';
+
+	for (int i=0; i<PLANTING_DEPTH_LENGTH; i++)
+	{
+		record->planting_depth[i]= ' ';
+	}
+	record->planting_depth[PLANTING_DEPTH_LENGTH] = '\0';
+
+	return 0;
+}
+
+int ghdb_insert(struct RECORD *record)
+{
+	GDBM_FILE gdbf = ghdb_open();
+	char *pk;
 	datum key;
 	datum content;
-	datum contentin;
+	int retcode = -1;
+
+	pk = malloc(PLANT_NAME_LENGTH + 1);
+	if (pk == NULL)
+	{
+		exit(EXIT_FAILURE);
+	}
+	strncpy(pk, record->plant_name, PLANT_NAME_LENGTH);
+
+	key.dsize = PLANT_NAME_LENGTH;
+	key.dptr = (((void *)pk));
+	pk = NULL;
+
+	content.dsize = sizeof(struct RECORD);
+	content.dptr = (((void *)record));
+
+	retcode = gdbm_store(gdbf, key, content, GDBM_INSERT);
+	if (retcode == 0)
+	{
+		xerror("Record inserted.");
+	}
+	if (retcode == -1)
+	{
+		fprintf(stderr, "can't insert into database: %s\n", gdbm_strerror (gdbm_errno));
+		exit(EXIT_FAILURE);
+	}
+	else if (retcode == 1)
+	{
+		fprintf(stderr, "can't insert into database: %s\n", gdbm_strerror (gdbm_errno));
+	}	
+	return 0;
+}
+
+int ghdb_select(struct RECORD *record)
+{
+
+
+	return 0;
+}
+
+int ghdb_update(struct RECORD *record)
+{
+
+	return 0;
+}
+
+
+int database()
+{
+/*
+
+	typedef struct
+	{
+		char *dptr;
+		int dsize;
+	} datum;
+
+	datum key;
+	datum content;
 	char *pk;
 	char *datein = "01/01/1980";
 	char *dateout; 
@@ -110,17 +236,7 @@ void *ghdb_open()
 		exit(EXIT_FAILURE);
 	}
 */
-	gdbf = gdbm_open(gdbf_filename, 0, GDBM_WRCREAT, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH), NULL);
-	if (gdbf == NULL)
-	{
-		fprintf(stderr, "can't open database: %s\n", gdbm_strerror (gdbm_errno));
-		exit(EXIT_FAILURE);
-	}
-	return gdbf;
-}
 
-int database()
-{
 	/*
 	Initiate sequential access to the database dbf. The returned value is the first key
 	accessed in the database. If the dptr field in the returned datum is NULL, inspect the

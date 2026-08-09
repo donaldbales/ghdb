@@ -1,3 +1,4 @@
+#include <gdbm.h>
 #include <ncurses.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -5,21 +6,26 @@
 #include "ghdb.h"
 
 /*
-  Get the length of the filed value from the screen buffer
+  Get the length of the field value from the screen buffer
 */
 int fldlen(const int y, const int x, const int l) 
 {
-	int x1 = x;
-	int x2 = x + l;
-	for (x2; x2 >= x1; x2--)
+	int len = 0;
+	int i = 0;
+	for (i=x+l; i>=x; i--)
 	{
-		int c = (mvinch(y, x2) & A_CHARTEXT);
+		int c = (mvinch(y, i) & A_CHARTEXT);
 		if (c > 32) {
-			fprintf(stderr, "fldlen:      r: %d\n", x2 - x1 + 1);
-			return x2 - x1 + 1;
+			len = i - x + 1;
+			break;
 		}
 	}
-	return 0;
+
+	char local[2001];
+	sprintf(local, "fldlen: '%d'", len);
+	xerror(local);
+
+	return len;
 }
 
 /*
@@ -27,8 +33,7 @@ int fldlen(const int y, const int x, const int l)
 */
 char *getfld(const int y, const int x, const int l)
 {
-	int x1 = x;
-	int x2 = x + l;
+	int i = 0;
 	char *field;
 	field = malloc(l + 1);
 	if (field == NULL)
@@ -36,18 +41,28 @@ char *getfld(const int y, const int x, const int l)
 		exit(EXIT_FAILURE);
 	}
 	char *f = field;
-	for (x1; x1<x2; x1++) 
+	for (i=x; i<x + l; i++) 
 	{
-		int c = (mvinch(y, x1) & A_CHARTEXT);
-		fprintf(stderr, "*getfld:     x1: %d\n", x1);
-		fprintf(stderr, "*getfld:      c: %d\n", c);
+		int c = (mvinch(y, i) & A_CHARTEXT);
+		fprintf(stderr, "*getfld: c='%d', i='%d'\n", c, i);
+
+		char local[2001];
+		sprintf(local, "*getfld: c='%c', i='%d'", c, i);
+		xerror(local);
+		//sleep(1);
+
 		*(f++) = c;
 	}
-	*(f) = 0;
+	*(f) = '\0';
+
+	char local[2001];
+	sprintf(local, "*getfld: '%s'", field);
+	xerror(local);
+
 	return field;
 }
 
-int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct CURSOR cursor)
+int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct CURSOR cursor, int action)
 {
 	for (;;)
 	{
@@ -63,8 +78,8 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct
 				for (int i=0; i<num_fields; i++)
 				{
 					if (cursor.y == fields[i].value.y &&
-						cursor.x >= fields[i].value.x && 
-						cursor.x <= fields[i].value.x + fields[i].value.l)
+						  cursor.x >= fields[i].value.x && 
+						  cursor.x <= fields[i].value.x + fields[i].value.l)
 					{
 						char *p = getfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
 						strcpy(fields[i].value.c_value, p);
@@ -74,13 +89,13 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct
 						{
 							(void) move(fields[i + 1].value.y, fields[i + 1].value.x + \
 								 fldlen(fields[i + 1].value.y, fields[i + 1].value.x, fields[i + 1].value.l));
-							(void) attron(fields[i + 1].value.fac);
+							//(void) attron(fields[i + 1].value.fac);
 						}
 						else
 						{
 							(void) move(fields[0].value.y, fields[0].value.x + \
 								 fldlen(fields[0].value.y, fields[0].value.x, fields[0].value.l));
-							(void) attron(fields[0].value.fac);
+							//(void) attron(fields[0].value.fac);
 						}
 
 						break;
@@ -94,6 +109,19 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct
 
 			case 13:
 				fprintf(stderr, "keyboard: %s\n", "RETURN");
+				for (int i=0; i<num_fields; i++)
+				{
+					if (cursor.y == fields[i].value.y &&
+						  cursor.x >= fields[i].value.x && 
+						  cursor.x <= fields[i].value.x + fields[i].value.l)
+					{
+						char *p = getfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
+						strcpy(fields[i].value.c_value, p);
+						free(p);
+						fprintf(stderr, "RETURN: %s\n", fields[i].value.c_value);
+					}
+				}
+				return action | ENTER;
 				break;
 
 			case KEY_CODE_YES:
@@ -245,6 +273,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct
 			case KEY_F(16):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(16)");
 				fprintf(stderr, "KEY_F(16)\n");
+				/*
 				for (int i=0; i<num_fields; i++)
 				{
 					if (cursor.y == fields[i].value.y &&
@@ -261,6 +290,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct
 				{
 					fprintf(stderr, "KEY_F(16): %s: %s\n", fields[i].label.l_value, fields[i].value.c_value);
 				}
+				*/
 				(void) endwin();
 				exit(0);
 				break;

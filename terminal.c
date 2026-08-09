@@ -1,136 +1,86 @@
+#include <gdbm.h>
 #include <ncurses.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "ghdb.h"
-
-char *lpad(char *in, int outlen, char c)
+/*
+struct RECORD
 {
-	int i = 0;
-	int inlen = strlen(in);
-	char *out;
-	if (outlen < 0)
-	{
-		return "";
-	}
-	out = malloc(outlen + 1);
-	if (out == NULL)
-	{
-		fprintf(stderr, "lpad: Failed to allocate memory.\n");
-		exit(1);
-	}
-	for (i = 0; i<outlen; i++)
-	{
-		*(out+i) = c;
-	}
-	*(out+outlen) = '\0';
-	for (i = outlen - 1, --inlen; i >= 0 && inlen >= 0; --i, --inlen)
-	{
-		*(out+i) = *(in+inlen);
-	}
-	return out;
+	char plant_name[PLANT_NAME_LENGTH + 1];
+	char latin_name[LATIN_NAME_LENGTH + 1];
+	char height[HEIGHT_LENGTH + 1];
+	char width[WIDTH_LENGTH + 1];
+	char planting_depth[PLANTING_DEPTH + 1];
+};
+*/
+int rtof(struct FIELD fields[], int num_fields, struct RECORD *record)
+{
+	/*
+	strncpy(fields[PLANT_NAME_FIELD].value.c_value, record->plant_name, PLANT_NAME_LENGTH);
+	strncpy(fields[LATIN_NAME_FIELD].value.c_value, record->latin_name, LATIN_NAME_LENGTH);
+	strncpy(fields[HEIGHT_FIELD].value.c_value, record->height, HEIGHT_LENGTH);
+	strncpy(fields[WIDTH_FIELD].value.c_value, record->width, WIDTH_LENGTH);
+	strncpy(fields[PLANTING_DEPTH_FIELD].value.c_value, record->planting_depth, PLANTING_DEPTH_LENGTH);
+	*/
+	strcpy(fields[PLANT_NAME_FIELD].value.c_value, record->plant_name);
+	strcpy(fields[LATIN_NAME_FIELD].value.c_value, record->latin_name);
+	strcpy(fields[HEIGHT_FIELD].value.c_value, record->height);
+	strcpy(fields[WIDTH_FIELD].value.c_value, record->width);
+	strcpy(fields[PLANTING_DEPTH_FIELD].value.c_value, record->planting_depth);
+
+	return 0;
 }
 
-int terminal()
+int ftor(struct FIELD fields[], int num_fields, struct RECORD *record)
 {
-	mmask_t all = (mmask_t) ALL_MOUSE_EVENTS;
-	int r = 1;
-	
-	char spaces[2001];
-	for (int i=0; i<sizeof(spaces) - 1; i++) {
-		spaces[i] = 32;  // space
-	}
-	spaces[2000] = 0;
+	/*
+	strncpy(record->plant_name, fields[PLANT_NAME_FIELD].value.c_value, PLANT_NAME_LENGTH);
+	strncpy(record->latin_name, fields[LATIN_NAME_FIELD].value.c_value, LATIN_NAME_LENGTH);
+	strncpy(record->height, fields[HEIGHT_FIELD].value.c_value, HEIGHT_LENGTH);
+	strncpy(record->width, fields[WIDTH_FIELD].value.c_value, WIDTH_LENGTH);
+	strncpy(record->planting_depth, fields[PLANTING_DEPTH_FIELD].value.c_value, PLANTING_DEPTH_LENGTH);
+	*/
+	strcpy(record->plant_name, fields[PLANT_NAME_FIELD].value.c_value);
+	strcpy(record->latin_name, fields[LATIN_NAME_FIELD].value.c_value);
+	strcpy(record->height, fields[HEIGHT_FIELD].value.c_value);
+	strcpy(record->width, fields[WIDTH_FIELD].value.c_value);
+	strcpy(record->planting_depth, fields[PLANTING_DEPTH_FIELD].value.c_value);
 
-	int num_fields = 5;
-	struct CURSOR cursor = { -1, -1 };
-	struct CURSOR curmax = { -1, -1 };
-	struct LABEL label = { -1, -1, -1, 0, "" };
-	struct VALUE value = { -1, -1, -1, 0, "", "" };
-	struct FIELD field = { label, value };
-	struct FIELD fields[num_fields];
-	/* initialize the fields */
-	for (int i=0; i<num_fields; i++)
+	return 0;
+}
+
+int xerror(char *message)
+{
+	int i = 0;
+	int l = 75;
+	char *local = malloc(l + 1);
+	struct CURSOR curmax;
+	getmaxyx(stdscr, curmax.y, curmax.x);
+	strcpy(local, message);
+	for (i=strlen(local); i<l; i++)
 	{
-		fields[i] = field;
+		*(local+i) = ' ';
 	}
-	/* set up the fields */
-	fields[0].label.y = 1;
-	fields[0].label.x = 1;
-	fields[0].label.l = 20;
-	fields[0].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	strncpy(fields[0].label.l_value, lpad("Plant Name", 20, ' '), fields[0].label.l);
-	fields[0].value.y = fields[0].label.y;
-	fields[0].value.x = fields[0].label.x + fields[0].label.l + 1;
-	fields[0].value.l = 30;
-	fields[0].value.fac = (COLOR_PAIR(1) | A_REVERSE);
-	strncpy(fields[0].value.c_value, spaces, fields[0].value.l);
+	*(local+l) = '\0';
 
-	fields[1].label.y = fields[1 - 1].label.y + 1;
-	fields[1].label.x = 1;
-	fields[1].label.l = 20;
-	fields[1].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	strncpy(fields[1].label.l_value, lpad("Latin Name", 20, ' '), fields[1].label.l);
-	fields[1].value.y = fields[1].label.y;
-	fields[1].value.x = fields[1].label.x + fields[1].label.l + 1;
-	fields[1].value.l = 30;
-	fields[1].value.fac = (COLOR_PAIR(1) | A_REVERSE);
-	strncpy(fields[1].value.c_value, spaces, fields[1].value.l);
+	(void) move(curmax.y - 1, 3);
+	(void) attroff(COLOR_PAIR(1) | A_REVERSE);
+	(void) attron(COLOR_PAIR(1) | A_BOLD);
+	(void) printw("%s", local);
+	(void) move(curmax.y - 1, curmax.x - 4);
+	(void) attroff(COLOR_PAIR(1) | A_BOLD);
+	free(local);
+	refresh();
+	//sleep(1);
 
-	fields[2].label.y = fields[2 - 1].label.y + 1;
-	fields[2].label.x = 1;
-	fields[2].label.l = 20;
-	fields[2].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	strncpy(fields[2].label.l_value, lpad("Height", 20, ' '), fields[2].label.l);
-	fields[2].value.y = fields[2].label.y;
-	fields[2].value.x = fields[2].label.x + fields[2].label.l + 1;
-	fields[2].value.l = 5;
-	fields[2].value.fac = (COLOR_PAIR(1) | A_REVERSE);
-	strncpy(fields[2].value.c_value, spaces, fields[2].value.l);
-	fields[2].uom.y = fields[2].value.y;
-	fields[2].uom.x = fields[2].value.x + fields[2].value.l + 1;
-	fields[2].uom.l = 6;
-	fields[2].uom.fac = (COLOR_PAIR(1) | A_NORMAL);
-	strncpy(fields[2].uom.u_value, lpad("inches", 6, ' '), fields[2].uom.l);
+	return 0;
+}
 
-	fields[3].label.y = fields[3 - 1].label.y + 1;
-	fields[3].label.x = 1;
-	fields[3].label.l = 20;
-	fields[3].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	strncpy(fields[3].label.l_value, lpad("Width", 20, ' '), fields[3].label.l);
-	fields[3].value.y = fields[3].label.y;
-	fields[3].value.x = fields[3].label.x + fields[3].label.l + 1;
-	fields[3].value.l = 5;
-	fields[3].value.fac = (COLOR_PAIR(1) | A_REVERSE);
-	strncpy(fields[3].value.c_value, spaces, fields[3].value.l);
-	fields[3].uom.y = fields[3].value.y;
-	fields[3].uom.x = fields[3].value.x + fields[3].value.l + 1;
-	fields[3].uom.l = 6;
-	fields[3].uom.fac = (COLOR_PAIR(1) | A_NORMAL);
-	strncpy(fields[3].uom.u_value, lpad("inches", 6, ' '), fields[3].uom.l);
-
-	fields[4].label.y = fields[4 - 1].label.y + 1;
-	fields[4].label.x = 1;
-	fields[4].label.l = 20;
-	fields[4].label.fac = (COLOR_PAIR(1) | A_NORMAL);
-	strncpy(fields[4].label.l_value, lpad("Planting Depth", 20, ' '), fields[4].label.l);
-	fields[4].value.y = fields[4].label.y;
-	fields[4].value.x = fields[4].label.x + fields[4].label.l + 1;
-	fields[4].value.l = 5;
-	fields[4].value.fac = (COLOR_PAIR(1) | A_REVERSE);
-	strncpy(fields[4].value.c_value, spaces, fields[4].value.l);
-	fields[4].uom.y = fields[4].value.y;
-	fields[4].uom.x = fields[4].value.x + fields[4].value.l + 1;
-	fields[4].uom.l = 6;
-	fields[4].uom.fac = (COLOR_PAIR(1) | A_NORMAL);
-	strncpy(fields[4].uom.u_value, lpad("inches", 6, ' '), fields[4].uom.l);
-
-	(void) initscr();
-	(void) cbreak();
-	(void) nonl();
-	(void) noecho();
-	(void) keypad(stdscr, true);
-	(void) mousemask(all, /*@i@*/ NULL);
+int paint(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct CURSOR *cursor)
+{
+	char message[curmax.x];
 
 	if (has_colors())
 	{
@@ -139,49 +89,133 @@ int terminal()
 		(void) attrset(COLOR_PAIR(1));
 	}
 
-	// paint the screen using the fields
+	cursor->x = 0;
+	cursor->y = 0;
+
+	//xerror("Upper left");
+	(void) move(cursor->y, cursor->x);
+	//refresh();
+	//sleep(1);
+	(void) attron(COLOR_PAIR(1) | A_NORMAL);
+	printw("%d", cursor->y);
+	//(void) move(cursor->y, cursor->x + 1);
+	//(void) attroff(COLOR_PAIR(1) | A_NORMAL);
+
+	//xerror("Upper right");
+	(void) move(cursor->y, curmax.x - 3);
+	//refresh();
+	//sleep(1);
+	(void) attron(COLOR_PAIR(1) | A_NORMAL);
+	printw("%d", curmax.x - 1);
+	(void) attroff(COLOR_PAIR(1) | A_NORMAL);
+
+	//xerror("Lower left");
+	(void) move(curmax.y - 1, cursor->x);
+	//refresh();
+	//sleep(1);
+	(void) attron(COLOR_PAIR(1) | A_NORMAL);
+	(void) printw("%d", curmax.y - 1);
+	(void) move(curmax.y - 1, curmax.x - 1);
+	(void) attroff(COLOR_PAIR(1) | A_NORMAL);
+	
+	//xerror("Lower right");
+	(void) move(curmax.y - 1, curmax.x - 3);
+	//refresh();
+	//sleep(1);
+	(void) attron(COLOR_PAIR(1) | A_NORMAL);
+	(void) printw("%d", curmax.x - 1);
+	(void) move(curmax.y - 1, curmax.x - 1);
+	(void) attroff(COLOR_PAIR(1) | A_NORMAL);
+	
 	for (int i=0; i<num_fields; i++)
 	{
 		if (fields[i].label.y != -1)
 		{
+			sprintf(message, "Label %d", i);
+			//xerror(message);
 			(void) move(fields[i].label.y, fields[i].label.x);
 			(void) attron(fields[i].label.fac);
 			(void) printw("%s", fields[i].label.l_value);
 			(void) move(fields[i].label.y, fields[i].label.x + fields[i].label.l);
 			(void) attroff(fields[i].label.fac);
 		}
+		//refresh();
+		//sleep(1);
 		if (fields[i].value.y != -1)
 		{
+			sprintf(message, "Field %d", i);
+			//xerror(message);
 			(void) move(fields[i].value.y, fields[i].value.x);
 			(void) attron(fields[i].value.fac);
 			(void) printw("%s", fields[i].value.c_value);
 			(void) move(fields[i].value.y, fields[i].value.x + fields[i].value.l);
 			(void) attroff(fields[i].value.fac);
-			if (cursor.y == -1)
+			if (cursor->y == 0)
 			{
-				cursor.y = fields[i].value.y;
-				cursor.x = fields[i].value.x;
+				cursor->y = fields[i].value.y;
+				cursor->x = fields[i].value.x;
 			}
 		}
+		//refresh();
+		//sleep(1);
 		if (fields[i].uom.y != -1)
 		{
+			sprintf(message, "UOM %d", i);
+			//xerror(message);
 			(void) move(fields[i].uom.y, fields[i].uom.x);
 			(void) attron(fields[i].uom.fac);
 			(void) printw("%s", fields[i].uom.u_value);
 			(void) move(fields[i].uom.y, fields[i].uom.x + fields[i].uom.l);
 			(void) attroff(fields[i].uom.fac);
 		}
+		//refresh();
+		//sleep(1);
 	}
-	(void) getmaxyx(stdscr, curmax.y, curmax.x);
-	fprintf(stderr, "cursor max y, x = %d, %d", curmax.y, curmax.x);
+	//xerror("PFKeys");
 	(void) move(curmax.y - 2, 2);
+	//refresh();
+	//sleep(1);
 	(void) attron(COLOR_PAIR(1) | A_NORMAL);
 	(void) printw("(16) Exit");
-	(void) move(cursor.y, cursor.x);
+	(void) move(curmax.y - 2, curmax.y - 2 + 9);
+	(void) attroff(COLOR_PAIR(1) | A_NORMAL);
+	
+	//xerror("Position Cursor");
+	(void) move(cursor->y, cursor->x);
+	//refresh();
+	//sleep(1);
+
+	return 0;
+}
+
+int terminal()
+{
+	int action = INSERT_MODE;
+	int num_fields = 5;
+	struct FIELD fields[num_fields];
+	struct CURSOR cursor = { -1, -1 };
+	struct CURSOR curmax = { -1, -1 };
+	struct RECORD record = { "", "", "", "", "" };
+	mmask_t all = (mmask_t) ALL_MOUSE_EVENTS;
+
+
+	(void) initscr();
+	(void) cbreak();
+	(void) nonl();
+	(void) noecho();
+	(void) keypad(stdscr, true);
+	(void) mousemask(all, /*@i@*/ NULL);
+
+	(void) getmaxyx(stdscr, curmax.y, curmax.x);
+	fprintf(stderr, "TERMINAL: curmax.y=%d, curmax.x=%d\n", curmax.y, curmax.x);
+	//(void) paint(fields, num_fields, &cursor);
+
+
+	(void) formscrn(fields, num_fields);
 
 	do
 	{
-		switch(r)
+		switch(action)
 		{
 			case (SELECT_MODE):
 				break;
@@ -196,8 +230,19 @@ int terminal()
 			case (SELECT_MODE | UPDATE_RECORD):
 				break;
 			case (INSERT_MODE):
+				//xerror("INSERT_MODE");
+				(void) init_record(&record);
+				(void) rtof(fields, num_fields, &record);
+				(void) paint(fields, num_fields, curmax, &cursor);
 				break;
 			case (INSERT_MODE | ENTER):
+				//xerror("INSERT_MODE | ENTER");
+				(void) ftor(fields, num_fields, &record);
+				(void) ghdb_insert(&record);
+				(void) init_record(&record);
+				(void) rtof(fields, num_fields, &record);
+				(void) paint(fields, num_fields, curmax, &cursor);
+				action = INSERT_MODE;
 				break;
 			case (UPDATE_MODE):
 				break;
@@ -210,14 +255,7 @@ int terminal()
 		}
 
 		(void) refresh();
-	} while ((r = keyboard(fields, num_fields, curmax, cursor)) > 1);
+	} while ((action = keyboard(fields, num_fields, curmax, cursor, action)) > 1);
 
-
-
-
-
-
-
-
-	return r;
+	return 0;
 }
