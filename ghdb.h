@@ -91,18 +91,22 @@ struct RECORD
 #define UPDATE_MODE     0x40000000
 #define DELETE_MODE     0x80000000
 
-int terminal();
-int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct CURSOR cursor, int action);
-int keymouse(struct FIELD fields[], int num_fields);
-int database();
 int formscrn(struct FIELD fields[], int num_fields);
+int ftor(struct FIELD fields[], int num_fields, struct RECORD *record);
 int ghdb_delete(struct RECORD *record);
 int ghdb_insert(struct RECORD *record);
 int ghdb_select(struct RECORD *record);
+int ghdb_select_first(struct RECORD *record);
+int ghdb_select_next(struct RECORD *record);
+int ghdb_select_previous(struct RECORD *record);
 int ghdb_update(struct RECORD *record);
-int ftor(struct FIELD fields[], int num_fields, struct RECORD *record);
-int rtof(struct FIELD fields[], int num_fields, struct RECORD *record);
 int init_record(struct RECORD *record);
-int xerror(char *message);
+int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int action);
+int keymouse(struct FIELD fields[], int num_fields);
+int rtof(struct FIELD fields[], int num_fields, struct RECORD *record);
+int terminal();
+int xerror(const char *message);
+void *ghdb_open();
+void ghdb_close(GDBM_FILE gdbm_file);
 
 #endif

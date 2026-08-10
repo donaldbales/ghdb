@@ -6,6 +6,76 @@
 #include <unistd.h>
 #include "ghdb.h"
 /*
+256.128.64.32.16.8 4 2 1
+
+(2) Create datafile
+
+(3) Add Records
+
+	Data Entry Mode
+	------------------
+	(ENTER) Add record
+	(9) Exit to modify
+	(12) Table/Range
+	(16) Exit
+
+(4) Modify Records
+
+	Find Mode
+	------------------
+	(ENTER) Find record
+	(2)	First record
+	(4)	Previous record
+	(5)	Next record
+	(9) Add record
+	(12) Table/Range
+	(16) Exit
+
+	Data Modification Mode
+	------------------
+	(ENTER) Modify record
+	(1)	Find
+	(16) Exit
+
+(5) Delete Records
+
+	Find Mode
+	------------------
+	(ENTER) Find record
+	(2)	First record
+	(4)	Previous record
+	(5)	Next record
+	(9) Add record
+	(12) Table/Range
+	(16) Exit
+
+	Data Deletion Mode
+	------------------
+	(ENTER) Delete record
+	(1)	Find
+	(16) Exit
+
+(6) Display Data File
+
+	Find Mode
+	------------------
+	(ENTER) Find record
+	(2)	First record
+	(4)	Previous record
+	(5)	Next record
+	(9) Add record
+	(12) Table/Range
+	(16) Exit
+
+(7) Import
+(8) Export
+
+(9) Run INQUIRY
+
+(16) Exit
+*/
+
+/*
 struct RECORD
 {
 	char plant_name[PLANT_NAME_LENGTH + 1];
@@ -51,7 +121,7 @@ int ftor(struct FIELD fields[], int num_fields, struct RECORD *record)
 	return 0;
 }
 
-int xerror(char *message)
+int xerror(const char *message)
 {
 	int i = 0;
 	int l = 75;
@@ -78,8 +148,11 @@ int xerror(char *message)
 	return 0;
 }
 
-int paint(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct CURSOR *cursor)
-{
+int paint(struct FIELD fields[], int num_fields, struct CURSOR *cursor)
+{	
+	struct CURSOR curmax;
+	(void) getmaxyx(stdscr, curmax.y, curmax.x);
+
 	char message[curmax.x];
 
 	if (has_colors())
@@ -194,11 +267,10 @@ int terminal()
 	int num_fields = 5;
 	struct FIELD fields[num_fields];
 	struct CURSOR cursor = { -1, -1 };
-	struct CURSOR curmax = { -1, -1 };
 	struct RECORD record = { "", "", "", "", "" };
 	mmask_t all = (mmask_t) ALL_MOUSE_EVENTS;
 
-
+	/* initialize ncurses */
 	(void) initscr();
 	(void) cbreak();
 	(void) nonl();
@@ -206,42 +278,51 @@ int terminal()
 	(void) keypad(stdscr, true);
 	(void) mousemask(all, /*@i@*/ NULL);
 
-	(void) getmaxyx(stdscr, curmax.y, curmax.x);
-	fprintf(stderr, "TERMINAL: curmax.y=%d, curmax.x=%d\n", curmax.y, curmax.x);
-	//(void) paint(fields, num_fields, &cursor);
-
-
 	(void) formscrn(fields, num_fields);
-
 	do
 	{
-		switch(action)
+		switch (action)
 		{
 			case (SELECT_MODE):
+				(void) init_record(&record);
+				(void) rtof(fields, num_fields, &record);
+				(void) paint(fields, num_fields, &cursor);
 				break;
 			case (SELECT_MODE | ENTER):
 				break;
 			case (SELECT_MODE | FIRST_RECORD):
+				(void) init_record(&record);
+				(void) rtof(fields, num_fields, &record);
+				(void) ghdb_select_first(&record);
+				fprintf(stderr, "terminal: record.plant_name='%s'\n", record.plant_name);
+				(void) rtof(fields, num_fields, &record);
+				(void) paint(fields, num_fields, &cursor);
 				break;
 			case (SELECT_MODE | NEXT_RECORD):
+				(void) ghdb_select_next(&record);
+				fprintf(stderr, "terminal: record.plant_name='%s'\n", record.plant_name);
+				(void) rtof(fields, num_fields, &record);
+				(void) paint(fields, num_fields, &cursor);
 				break;
 			case (SELECT_MODE | PREVIOUS_RECORD):
+				(void) ghdb_select_previous(&record);
+				fprintf(stderr, "terminal: record.plant_name='%s'\n", record.plant_name);
+				(void) rtof(fields, num_fields, &record);
+				(void) paint(fields, num_fields, &cursor);
 				break;
 			case (SELECT_MODE | UPDATE_RECORD):
 				break;
 			case (INSERT_MODE):
-				//xerror("INSERT_MODE");
 				(void) init_record(&record);
 				(void) rtof(fields, num_fields, &record);
-				(void) paint(fields, num_fields, curmax, &cursor);
+				(void) paint(fields, num_fields, &cursor);
 				break;
 			case (INSERT_MODE | ENTER):
-				//xerror("INSERT_MODE | ENTER");
 				(void) ftor(fields, num_fields, &record);
 				(void) ghdb_insert(&record);
 				(void) init_record(&record);
 				(void) rtof(fields, num_fields, &record);
-				(void) paint(fields, num_fields, curmax, &cursor);
+				(void) paint(fields, num_fields, &cursor);
 				action = INSERT_MODE;
 				break;
 			case (UPDATE_MODE):
@@ -255,7 +336,7 @@ int terminal()
 		}
 
 		(void) refresh();
-	} while ((action = keyboard(fields, num_fields, curmax, cursor, action)) > 1);
+	} while ((action = keyboard(fields, num_fields, cursor, action)) > 1);
 
 	return 0;
 }

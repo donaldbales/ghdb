@@ -62,8 +62,11 @@ char *getfld(const int y, const int x, const int l)
 	return field;
 }
 
-int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct CURSOR cursor, int action)
+int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int action)
 {
+	struct CURSOR curmax;
+	(void) getmaxyx(stdscr, curmax.y, curmax.x);
+
 	for (;;)
 	{
 		int ch = getch();
@@ -216,6 +219,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct
 	
 			case KEY_F(2):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(2)");
+				return (SELECT_MODE | FIRST_RECORD);
 				break;
 	
 			case KEY_F(3):
@@ -224,10 +228,18 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct
 	
 			case KEY_F(4):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(4)");
+				if (action & SELECT_MODE)
+				{
+					return (SELECT_MODE | PREVIOUS_RECORD);	
+				}
 				break;
 	
 			case KEY_F(5):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(5)");
+				if (action & SELECT_MODE)
+				{
+					return (SELECT_MODE | NEXT_RECORD);
+				}
 				break;
 	
 			case KEY_F(6):
@@ -291,6 +303,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR curmax, struct
 					fprintf(stderr, "KEY_F(16): %s: %s\n", fields[i].label.l_value, fields[i].value.c_value);
 				}
 				*/
+				(void) ghdb_close(ghdb_open());
 				(void) endwin();
 				exit(0);
 				break;

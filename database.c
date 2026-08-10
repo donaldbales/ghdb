@@ -9,85 +9,29 @@
 #include <time.h>
 #include "ghdb.h"
 
-/*
-256.128.64.32.16.8 4 2 1
-
-(2) Create datafile
-
-(3) Add Records
-
-	Data Entry Mode
-	------------------
-	(ENTER) Add record
-	(9) Exit to modify
-	(12) Table/Range
-	(16) Exit
-
-(4) Modify Records
-
-	Find Mode
-	------------------
-	(ENTER) Find record
-	(2)	First record
-	(4)	Previous record
-	(5)	Next record
-	(9) Add record
-	(12) Table/Range
-	(16) Exit
-
-	Data Modification Mode
-	------------------
-	(ENTER) Modify record
-	(1)	Find
-	(16) Exit
-
-(5) Delete Records
-
-	Find Mode
-	------------------
-	(ENTER) Find record
-	(2)	First record
-	(4)	Previous record
-	(5)	Next record
-	(9) Add record
-	(12) Table/Range
-	(16) Exit
-
-	Data Deletion Mode
-	------------------
-	(ENTER) Delete record
-	(1)	Find
-	(16) Exit
-
-(6) Display Data File
-
-	Find Mode
-	------------------
-	(ENTER) Find record
-	(2)	First record
-	(4)	Previous record
-	(5)	Next record
-	(9) Add record
-	(12) Table/Range
-	(16) Exit
-
-(7) Import
-(8) Export
-
-(9) Run INQUIRY
-
-(16) Exit
-*/
-
-void gdbf_close(GDBM_FILE gdbf)
+/* Key doubly-linked list */
+struct DLL_KEY 
 {
-	if (gdbm_close(gdbf) == 0)
+	void *prev;
+	char *key;
+	void *next;
+};
+struct DLL_KEY *ghdb_key = NULL;
+
+static int compare_char_arrays(const void *a, const void *b)
+{
+	return strcmp(*(const char**)a, *(const char**)b); 
+}
+
+void ghdb_close(GDBM_FILE gdbm_file)
+{
+	if (gdbm_close(gdbm_file) == 0)
 	{
-		gdbf = NULL;
+		gdbm_file = NULL;
 	}
 	else
 	{
-		fprintf(stderr, "can't close database: %s\n", gdbm_strerror (gdbm_errno));
+		fprintf(stderr, "can't close the database: %s\n", gdbm_strerror (gdbm_errno));
 		exit(EXIT_FAILURE);
 	}
 	return;
@@ -95,18 +39,19 @@ void gdbf_close(GDBM_FILE gdbf)
 
 void *ghdb_open() 
 {
-	static GDBM_FILE gdbf = NULL;
-	char* gdbf_filename = "ghdb.gbm"; 
-	if (gdbf == NULL)
+	static GDBM_FILE gdbm_file = NULL;
+	char* gdbm_file_filename = "ghdb.gbm"; 
+	if (gdbm_file == NULL)
 	{
-		gdbf = gdbm_open(gdbf_filename, 0, GDBM_WRCREAT, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH), NULL);
+		fprintf(stderr, "opening the database\n");
+		gdbm_file = gdbm_open(gdbm_file_filename, 0, GDBM_WRCREAT, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH), NULL);
 	}
-	if (gdbf == NULL)
+	if (gdbm_file == NULL)
 	{
-		fprintf(stderr, "can't open database: %s\n", gdbm_strerror (gdbm_errno));
+		fprintf(stderr, "can't open the database: %s\n", gdbm_strerror (gdbm_errno));
 		exit(EXIT_FAILURE);
 	}
-	return gdbf;
+	return gdbm_file;
 }
 
 int ghdb_delete(struct RECORD *record)
@@ -152,7 +97,7 @@ int init_record(struct RECORD *record)
 
 int ghdb_insert(struct RECORD *record)
 {
-	GDBM_FILE gdbf = ghdb_open();
+	GDBM_FILE gdbm_file = ghdb_open();
 	char *pk;
 	datum key;
 	datum content;
@@ -172,7 +117,7 @@ int ghdb_insert(struct RECORD *record)
 	content.dsize = sizeof(struct RECORD);
 	content.dptr = (((void *)record));
 
-	retcode = gdbm_store(gdbf, key, content, GDBM_INSERT);
+	retcode = gdbm_store(gdbm_file, key, content, GDBM_INSERT);
 	if (retcode == 0)
 	{
 		xerror("Record inserted.");
@@ -185,13 +130,188 @@ int ghdb_insert(struct RECORD *record)
 	else if (retcode == 1)
 	{
 		fprintf(stderr, "can't insert into database: %s\n", gdbm_strerror (gdbm_errno));
-	}	
+	}
+
 	return 0;
 }
 
-int ghdb_select(struct RECORD *record)
+int ghdb_select_first(struct RECORD *record)
 {
+	datum content;
+	datum key;
+	datum nextkey;
+	gdbm_count_t ghdb_count;
+	int i = 0;
+	struct DLL_KEY *k = NULL; 
+	void *prev = NULL;
+	GDBM_FILE gdbm_file = ghdb_open();
+	gdbm_count(gdbm_file, &ghdb_count);
+	fprintf(stderr, "Database: has %lld records\n", ghdb_count);
 
+	/* create an array big enough to hold all the current keys */
+	char *keys[ghdb_count];
+	fprintf(stderr, "After array allocation\n");
+
+	/* get all the keys */
+	key = gdbm_firstkey(gdbm_file);
+	fprintf(stderr, "key.dptr='%s'", key.dptr);
+	keys[0] = key.dptr;
+	fprintf(stderr, "Database: 0 key='%s'\n", keys[0]);
+	for (i=1; i<ghdb_count; i++)
+	{
+		nextkey = gdbm_nextkey(gdbm_file, key);
+		//free(key.dptr); // reclaim memory
+		if (nextkey.dptr)
+		{
+			key = nextkey;
+			keys[i] = key.dptr;
+			fprintf(stderr, "Database: %d key='%s'\n", i, keys[i]);
+		}
+	}
+	//free(key.dptr);
+	for (i=0; i<ghdb_count; i++)
+	{
+		fprintf(stderr, "Database: unsorted %d key='%s'\n", i, keys[i]);
+	}
+	
+	/* sort the keys */
+	qsort(keys, ghdb_count, sizeof(const char *), compare_char_arrays);
+	for (i=0; i<ghdb_count; i++)
+	{
+		fprintf(stderr, "Database: sorted %d key='%s'\n", i, keys[i]);
+	}
+
+	/* create the doubly-linked list of keys */
+	for (i=0; i<ghdb_count; i++)
+	{
+		k = malloc(sizeof(struct DLL_KEY));
+		if (prev == NULL)
+		{
+			ghdb_key = k;
+		}
+		else
+		{
+			((struct DLL_KEY *)prev)->next = k;
+		} 
+		k->prev = prev;
+		k->key = malloc(PLANT_NAME_LENGTH + 1);
+		strncpy(k->key, keys[i], PLANT_NAME_LENGTH);
+		*(k->key+30) = '\0';
+		k->next = NULL;
+		prev = k;
+	}
+
+	fprintf(stderr, "first='%s'\n", ((struct DLL_KEY *)ghdb_key)->key);
+	// NOTE: eventually you need to deal with free-ing the keys
+
+	/* get the first record using the dll */
+	key.dptr = ((struct DLL_KEY *)ghdb_key)->key;
+	key.dsize = PLANT_NAME_LENGTH;
+	fprintf(stderr, "key.dptr='%s'\n", key.dptr);
+	fprintf(stderr, "key.dsize=%d\n", key.dsize);
+	content = gdbm_fetch(gdbm_file, key);
+	if (content.dptr != NULL)
+	{
+		memcpy(record, content.dptr, content.dsize);
+		fprintf(stderr, "record->plant_name='%s'\n", record->plant_name);
+		xerror("");
+	}
+	else if (gdbm_errno == GDBM_ITEM_NOT_FOUND)
+	{
+		xerror("Record not found.");
+	}
+	else
+	{
+		xerror(gdbm_db_strerror(gdbm_file));
+	}
+	
+	fprintf(stderr, "Returning from ghdb_select_first()\n");
+
+	return 0;
+}
+
+int ghdb_select_next(struct RECORD *record)
+{
+	datum content;
+	datum key;
+	GDBM_FILE gdbm_file = ghdb_open();
+
+	/* use the dll to get the next record */
+	if (ghdb_key->next != NULL)
+	{
+		ghdb_key = ghdb_key->next;
+		fprintf(stderr, "first='%s'\n", ((struct DLL_KEY *)ghdb_key)->key);
+		// NOTE: eventually you need to deal with free-ing the keys
+		
+		key.dptr = ((struct DLL_KEY *)ghdb_key)->key;
+		key.dsize = PLANT_NAME_LENGTH;
+		fprintf(stderr, "key.dptr='%s'\n", key.dptr);
+		fprintf(stderr, "key.dsize=%d\n", key.dsize);
+		content = gdbm_fetch(gdbm_file, key);
+		if (content.dptr != NULL)
+		{
+			memcpy(record, content.dptr, content.dsize);
+			fprintf(stderr, "record->plant_name='%s'\n", record->plant_name);
+			xerror("");
+		}
+		else if (gdbm_errno == GDBM_ITEM_NOT_FOUND)
+		{
+			xerror("Record not found.");
+		}
+		else
+		{
+			xerror(gdbm_db_strerror(gdbm_file));
+		}
+	}
+	else
+	{
+		xerror("Last record.");
+	}
+
+	fprintf(stderr, "Returning from ghdb_select_next()\n");
+
+	return 0;
+}
+
+int ghdb_select_previous(struct RECORD *record)
+{
+	datum content;
+	datum key;
+	GDBM_FILE gdbm_file = ghdb_open();
+
+	/* use the dll to get the previous record */
+	if (ghdb_key->prev != NULL)
+	{
+		ghdb_key = ghdb_key->prev;
+		fprintf(stderr, "previous='%s'\n", ((struct DLL_KEY *)ghdb_key)->key);
+		// NOTE: eventually you need to deal with free-ing the keys
+		
+		key.dptr = ((struct DLL_KEY *)ghdb_key)->key;
+		key.dsize = PLANT_NAME_LENGTH;
+		fprintf(stderr, "key.dptr='%s'\n", key.dptr);
+		fprintf(stderr, "key.dsize=%d\n", key.dsize);
+		content = gdbm_fetch(gdbm_file, key);
+		if (content.dptr != NULL)
+		{
+			memcpy(record, content.dptr, content.dsize);
+			fprintf(stderr, "record->plant_name='%s'\n", record->plant_name);
+			xerror("");
+		}
+		else if (gdbm_errno == GDBM_ITEM_NOT_FOUND)
+		{
+			xerror("Record not found.");
+		}
+		else
+		{
+			xerror(gdbm_db_strerror(gdbm_file));
+		}
+	}
+	else
+	{
+		xerror("First record.");
+	}
+
+	fprintf(stderr, "Returning from ghdb_select_previous()\n");
 
 	return 0;
 }
@@ -273,7 +393,7 @@ int database()
 	On error, returns 0 and sets gdbm_errno to a non-0 error code.
 	*/
 
-	//int gdbm_exists(gdbf, datum key);
+	//int gdbm_exists(gdbm_file, datum key);
 	
 	/*
 	Deletes the data associated with the given key, if it exists in the database dbf.

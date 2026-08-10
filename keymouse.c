@@ -38,17 +38,32 @@ int keymouse(struct FIELD fields[], int num_fields)
 	if ((mevent.bstate & BUTTON1_CLICKED) != 0)
 	{
 		fprintf(stderr, "keymouse: %s\n", "BUTTON1_CLICKED");
-		for (int i=0; i<num_fields; i++)
+		if (button_alt == 1)
 		{
-			if (mevent.y == fields[i].value.y &&
-				mevent.x >= fields[i].value.x && 
-				mevent.x <= fields[i].value.x + fields[i].value.l)
-			{
-				(void) move(mevent.y, mevent.x);
-				(void) attron(fields[i].value.fac);
-			}
+
 		}
-		return 0;
+		else if (button_ctrl == 1)
+		{
+
+		}
+		else if (button_shift == 1)
+		{
+
+		}
+		else
+		{
+			for (int i=0; i<num_fields; i++)
+			{
+				if (mevent.y == fields[i].value.y &&
+					mevent.x >= fields[i].value.x && 
+					mevent.x <= fields[i].value.x + fields[i].value.l)
+				{
+					(void) move(mevent.y, mevent.x);
+					(void) attron(fields[i].value.fac);
+				}
+			}
+			return 0;
+		}
 	}
 	if ((mevent.bstate & BUTTON1_DOUBLE_CLICKED) != 0)
 	{
