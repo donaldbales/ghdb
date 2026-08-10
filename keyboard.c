@@ -215,6 +215,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 	
 			case KEY_F(1):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(1)");
+				return (SELECT_MODE);
 				break;
 	
 			case KEY_F(2):
@@ -224,6 +225,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 	
 			case KEY_F(3):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(3)");
+				return (INSERT_MODE);
 				break;
 	
 			case KEY_F(4):
@@ -244,6 +246,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 	
 			case KEY_F(6):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(6)");
+				return (UPDATE_MODE);
 				break;
 	
 			case KEY_F(7):

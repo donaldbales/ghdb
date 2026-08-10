@@ -135,7 +135,7 @@ int xerror(const char *message)
 	}
 	*(local+l) = '\0';
 
-	(void) move(curmax.y - 1, 3);
+	(void) move(curmax.y - 1, 0);
 	(void) attroff(COLOR_PAIR(1) | A_REVERSE);
 	(void) attron(COLOR_PAIR(1) | A_BOLD);
 	(void) printw("%s", local);
@@ -148,8 +148,11 @@ int xerror(const char *message)
 	return 0;
 }
 
-int paint(struct FIELD fields[], int num_fields, struct CURSOR *cursor)
+int paint(struct FIELD fields[], int num_fields, struct CURSOR *cursor, int action)
 {	
+	//                         1         2         3         4         5         6         7         8
+	//                12345678901234567890123456789012345678901234567890123456789012345678901234567890
+	char title[80] = "                           GREEN HOUSE PLANT DATABASE                 ";
 	struct CURSOR curmax;
 	(void) getmaxyx(stdscr, curmax.y, curmax.x);
 
@@ -164,28 +167,23 @@ int paint(struct FIELD fields[], int num_fields, struct CURSOR *cursor)
 
 	cursor->x = 0;
 	cursor->y = 0;
-
+/*
 	//xerror("Upper left");
 	(void) move(cursor->y, cursor->x);
-	//refresh();
-	//sleep(1);
 	(void) attron(COLOR_PAIR(1) | A_NORMAL);
 	printw("%d", cursor->y);
-	//(void) move(cursor->y, cursor->x + 1);
-	//(void) attroff(COLOR_PAIR(1) | A_NORMAL);
+	(void) move(cursor->y, cursor->x + 1);
+	(void) attroff(COLOR_PAIR(1) | A_NORMAL);
 
 	//xerror("Upper right");
 	(void) move(cursor->y, curmax.x - 3);
-	//refresh();
-	//sleep(1);
 	(void) attron(COLOR_PAIR(1) | A_NORMAL);
 	printw("%d", curmax.x - 1);
+	(void) move(cursor->y, curmax.x - 1);
 	(void) attroff(COLOR_PAIR(1) | A_NORMAL);
 
 	//xerror("Lower left");
 	(void) move(curmax.y - 1, cursor->x);
-	//refresh();
-	//sleep(1);
 	(void) attron(COLOR_PAIR(1) | A_NORMAL);
 	(void) printw("%d", curmax.y - 1);
 	(void) move(curmax.y - 1, curmax.x - 1);
@@ -193,13 +191,38 @@ int paint(struct FIELD fields[], int num_fields, struct CURSOR *cursor)
 	
 	//xerror("Lower right");
 	(void) move(curmax.y - 1, curmax.x - 3);
-	//refresh();
-	//sleep(1);
 	(void) attron(COLOR_PAIR(1) | A_NORMAL);
 	(void) printw("%d", curmax.x - 1);
 	(void) move(curmax.y - 1, curmax.x - 1);
 	(void) attroff(COLOR_PAIR(1) | A_NORMAL);
-	
+*/
+	if      (action & DELETE_MODE)
+	{
+		(void) strcat(title, "DELETE");
+	}
+	else if (action & INSERT_MODE)
+	{
+		(void) strcat(title, "   ADD");
+	}
+	else if (action & UPDATE_MODE)
+	{
+		(void) strcat(title, "MODIFY");
+	}
+	else if (action & SELECT_MODE)
+	{
+		(void) strcat(title, "  FIND");
+	}
+	else
+	{
+		(void) strcat(title, "  WTF?");
+	}
+	(void) move(cursor->y, cursor->x + 1);
+	(void) attron(COLOR_PAIR(1) | A_NORMAL);
+	printw("%s", title);
+	(void) move(cursor->y, curmax.x - 4);
+	(void) attroff(COLOR_PAIR(1) | A_NORMAL);
+
+
 	for (int i=0; i<num_fields; i++)
 	{
 		if (fields[i].label.y != -1)
@@ -245,11 +268,13 @@ int paint(struct FIELD fields[], int num_fields, struct CURSOR *cursor)
 		//sleep(1);
 	}
 	//xerror("PFKeys");
-	(void) move(curmax.y - 2, 2);
+	(void) move(curmax.y - 2, 0);
 	//refresh();
 	//sleep(1);
 	(void) attron(COLOR_PAIR(1) | A_NORMAL);
-	(void) printw("(16) Exit");
+	//                      1         2         3         4         5         6         7         8
+	//             12345678901234567890123456789012345678901234567890123456789012345678901234567890
+	(void) printw("(1)Find (2)First (3)New  (4)Prev (5)Next (6)Modify (7)Import (8)Export (16)Exit");
 	(void) move(curmax.y - 2, curmax.y - 2 + 9);
 	(void) attroff(COLOR_PAIR(1) | A_NORMAL);
 	
@@ -286,9 +311,13 @@ int terminal()
 			case (SELECT_MODE):
 				(void) init_record(&record);
 				(void) rtof(fields, num_fields, &record);
-				(void) paint(fields, num_fields, &cursor);
+				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (SELECT_MODE | ENTER):
+				(void) ftor(fields, num_fields, &record);
+				(void) ghdb_select(&record);
+				(void) rtof(fields, num_fields, &record);
+				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (SELECT_MODE | FIRST_RECORD):
 				(void) init_record(&record);
@@ -296,42 +325,46 @@ int terminal()
 				(void) ghdb_select_first(&record);
 				fprintf(stderr, "terminal: record.plant_name='%s'\n", record.plant_name);
 				(void) rtof(fields, num_fields, &record);
-				(void) paint(fields, num_fields, &cursor);
+				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (SELECT_MODE | NEXT_RECORD):
 				(void) ghdb_select_next(&record);
 				fprintf(stderr, "terminal: record.plant_name='%s'\n", record.plant_name);
 				(void) rtof(fields, num_fields, &record);
-				(void) paint(fields, num_fields, &cursor);
+				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (SELECT_MODE | PREVIOUS_RECORD):
 				(void) ghdb_select_previous(&record);
 				fprintf(stderr, "terminal: record.plant_name='%s'\n", record.plant_name);
 				(void) rtof(fields, num_fields, &record);
-				(void) paint(fields, num_fields, &cursor);
+				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (SELECT_MODE | UPDATE_RECORD):
 				break;
 			case (INSERT_MODE):
 				(void) init_record(&record);
 				(void) rtof(fields, num_fields, &record);
-				(void) paint(fields, num_fields, &cursor);
+				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (INSERT_MODE | ENTER):
 				(void) ftor(fields, num_fields, &record);
 				(void) ghdb_insert(&record);
 				(void) init_record(&record);
 				(void) rtof(fields, num_fields, &record);
-				(void) paint(fields, num_fields, &cursor);
+				(void) paint(fields, num_fields, &cursor, action);
 				action = INSERT_MODE;
 				break;
 			case (UPDATE_MODE):
+				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (UPDATE_MODE | ENTER):
+				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (DELETE_MODE):
+				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (DELETE_MODE | ENTER):
+				(void) paint(fields, num_fields, &cursor, action);
 				break;
 		}
 

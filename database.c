@@ -135,6 +135,37 @@ int ghdb_insert(struct RECORD *record)
 	return 0;
 }
 
+int ghdb_select(struct RECORD *record)
+{
+	datum content;
+	datum key;
+	GDBM_FILE gdbm_file = ghdb_open();
+
+	key.dptr = record->plant_name;
+	key.dsize = PLANT_NAME_LENGTH;
+	fprintf(stderr, "key.dptr='%s'\n", key.dptr);
+	fprintf(stderr, "key.dsize=%d\n", key.dsize);
+	content = gdbm_fetch(gdbm_file, key);
+	if (content.dptr != NULL)
+	{
+		memcpy(record, content.dptr, content.dsize);
+		fprintf(stderr, "record->plant_name='%s'\n", record->plant_name);
+		xerror("");
+	}
+	else if (gdbm_errno == GDBM_ITEM_NOT_FOUND)
+	{
+		xerror("Record not found.");
+	}
+	else
+	{
+		xerror(gdbm_db_strerror(gdbm_file));
+	}
+	
+	fprintf(stderr, "Returning from ghdb_select()\n");
+
+	return 0;
+}
+
 int ghdb_select_first(struct RECORD *record)
 {
 	datum content;
@@ -142,10 +173,13 @@ int ghdb_select_first(struct RECORD *record)
 	datum nextkey;
 	gdbm_count_t ghdb_count;
 	int i = 0;
+	char message[80];
 	struct DLL_KEY *k = NULL; 
 	void *prev = NULL;
 	GDBM_FILE gdbm_file = ghdb_open();
 	gdbm_count(gdbm_file, &ghdb_count);
+	sprintf(message, "%lld records.", ghdb_count);
+	xerror(message);
 	fprintf(stderr, "Database: has %lld records\n", ghdb_count);
 
 	/* create an array big enough to hold all the current keys */
@@ -214,7 +248,7 @@ int ghdb_select_first(struct RECORD *record)
 	{
 		memcpy(record, content.dptr, content.dsize);
 		fprintf(stderr, "record->plant_name='%s'\n", record->plant_name);
-		xerror("");
+		//xerror("");
 	}
 	else if (gdbm_errno == GDBM_ITEM_NOT_FOUND)
 	{
