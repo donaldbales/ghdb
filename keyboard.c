@@ -21,10 +21,6 @@ int fldlen(const int y, const int x, const int l)
 		}
 	}
 
-	char local[2001];
-	sprintf(local, "fldlen: '%d'", len);
-	xerror(local);
-
 	return len;
 }
 
@@ -44,25 +40,14 @@ char *getfld(const int y, const int x, const int l)
 	for (i=x; i<x + l; i++) 
 	{
 		int c = (mvinch(y, i) & A_CHARTEXT);
-		fprintf(stderr, "*getfld: c='%d', i='%d'\n", c, i);
-
-		char local[2001];
-		sprintf(local, "*getfld: c='%c', i='%d'", c, i);
-		xerror(local);
-		//sleep(1);
-
 		*(f++) = c;
 	}
 	*(f) = '\0';
 
-	char local[2001];
-	sprintf(local, "*getfld: '%s'", field);
-	xerror(local);
-
 	return field;
 }
 
-int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int action)
+int keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned action)
 {
 	struct CURSOR curmax;
 	(void) getmaxyx(stdscr, curmax.y, curmax.x);
@@ -71,8 +56,8 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 	{
 		int ch = getch();
 		fprintf(stderr, "keyboard: %d (%c)\n", ch, ch);
-		(void) getyx(stdscr, cursor.y, cursor.x);
-		fprintf(stderr, "keyboard: y=%d x=%d\n", cursor.y, cursor.x);
+		(void) getyx(stdscr, cursor->y, cursor->x);
+		fprintf(stderr, "keyboard: y=%d x=%d\n", cursor->y, cursor->x);
 
 		switch(ch)
 		{
@@ -80,9 +65,9 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 				fprintf(stderr, "keyboard: %s\n", "TAB");
 				for (int i=0; i<num_fields; i++)
 				{
-					if (cursor.y == fields[i].value.y &&
-						  cursor.x >= fields[i].value.x && 
-						  cursor.x <= fields[i].value.x + fields[i].value.l)
+					if (cursor->y == fields[i].value.y &&
+						  cursor->x >= fields[i].value.x && 
+						  cursor->x <= fields[i].value.x + fields[i].value.l)
 					{
 						char *p = getfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
 						strcpy(fields[i].value.c_value, p);
@@ -110,13 +95,13 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 				fprintf(stderr, "keyboard: %s\n", "NEWLINE");
 				break;
 
-			case 13:
+			case 13: // aka ENTER
 				fprintf(stderr, "keyboard: %s\n", "RETURN");
 				for (int i=0; i<num_fields; i++)
 				{
-					if (cursor.y == fields[i].value.y &&
-						  cursor.x >= fields[i].value.x && 
-						  cursor.x <= fields[i].value.x + fields[i].value.l)
+					if (cursor->y == fields[i].value.y &&
+						  cursor->x >= fields[i].value.x && 
+						  cursor->x <= fields[i].value.x + fields[i].value.l)
 					{
 						char *p = getfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
 						strcpy(fields[i].value.c_value, p);
@@ -124,7 +109,22 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 						fprintf(stderr, "RETURN: %s\n", fields[i].value.c_value);
 					}
 				}
-				return action | ENTER;
+				if      (action & INSERT_MODE)
+				{
+					return (INSERT_MODE | ENTER);
+				}
+				else if (action & DELETE_MODE)
+				{
+					return (DELETE_MODE | ENTER);
+				}
+				else if (action & SELECT_MODE)
+				{
+					return (SELECT_MODE | UPDATE_RECORD); // pressing ENTER in SELECT_MODE must mean UPDATE
+				}
+				else if (action & UPDATE_MODE)
+				{
+					return (UPDATE_MODE | ENTER);
+				}
 				break;
 
 			case KEY_CODE_YES:
@@ -160,14 +160,14 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 				fprintf(stderr, "keyboard: %s\n", "KEY_LEFT");
 				for (int i=0; i<num_fields; i++)
 				{
-					if (cursor.y == fields[i].value.y &&
-						cursor.x >= fields[i].value.x && 
-						cursor.x <= fields[i].value.x + fields[i].value.l)
+					if (cursor->y == fields[i].value.y &&
+						  cursor->x >= fields[i].value.x && 
+						  cursor->x <= fields[i].value.x + fields[i].value.l)
 					{
-						(void) move(cursor.y, --cursor.x);
+						(void) move(cursor->y, --cursor->x);
 						(void) attron(fields[i].value.fac);
 						//(void) printw("%c", 32);
-						(void) move(cursor.y, cursor.x);
+						(void) move(cursor->y, cursor->x);
 					}
 				}
 				break;
@@ -176,14 +176,14 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 				fprintf(stderr, "keyboard: %s\n", "KEY_RIGHT");
 				for (int i=0; i<num_fields; i++)
 				{
-					if (cursor.y == fields[i].value.y &&
-						cursor.x >= fields[i].value.x && 
-						cursor.x <  fields[i].value.x + fields[i].value.l)
+					if (cursor->y == fields[i].value.y &&
+						  cursor->x >= fields[i].value.x && 
+						  cursor->x <  fields[i].value.x + fields[i].value.l)
 					{
-						(void) move(cursor.y, ++cursor.x);
+						(void) move(cursor->y, ++cursor->x);
 						(void) attron(fields[i].value.fac);
 						//(void) printw("%c", 32);
-						//(void) move(cursor.y, cursor.x);
+						//(void) move(cursor->y, cursor->x);
 					}
 				}
 				break;
@@ -196,14 +196,18 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 				fprintf(stderr, "keyboard: %s\n", "KEY_BACKSPACE");
 				for (int i=0; i<num_fields; i++)
 				{
-					if (cursor.y == fields[i].value.y &&
-						cursor.x >  fields[i].value.x && 
-						cursor.x <= fields[i].value.x + fields[i].value.l)
+					if (cursor->y == fields[i].value.y &&
+						  cursor->x >  fields[i].value.x && 
+						  cursor->x <= fields[i].value.x + fields[i].value.l)
 					{
-						(void) move(cursor.y, --cursor.x);
-						(void) attron(fields[i].value.fac);
-						(void) printw("%c", 32);
-						(void) move(cursor.y, cursor.x);
+							if (!((action & SELECT_MODE) && i == PLANT_NAME_FIELD))
+							{
+								(void) move(cursor->y, --cursor->x);
+								(void) attron(fields[i].value.fac);
+								(void) printw("%c", 32);
+								(void) move(cursor->y, cursor->x);
+								xerror("Press (ENTER) to save.");
+							}
 						break;
 					}
 				}
@@ -215,7 +219,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 	
 			case KEY_F(1):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(1)");
-				return (SELECT_MODE);
+				return (INSERT_MODE);
 				break;
 	
 			case KEY_F(2):
@@ -225,7 +229,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 	
 			case KEY_F(3):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(3)");
-				return (INSERT_MODE);
+				return (SELECT_MODE);
 				break;
 	
 			case KEY_F(4):
@@ -246,7 +250,8 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 	
 			case KEY_F(6):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(6)");
-				return (UPDATE_MODE);
+				xerror("Press (ENTER) to confirm delete.");
+				return (DELETE_MODE);
 				break;
 	
 			case KEY_F(7):
@@ -291,9 +296,9 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 				/*
 				for (int i=0; i<num_fields; i++)
 				{
-					if (cursor.y == fields[i].value.y &&
-						cursor.x >= fields[i].value.x && 
-						cursor.x <= fields[i].value.x + fields[i].value.l)
+					if (cursor->y == fields[i].value.y &&
+						cursor->x >= fields[i].value.x && 
+						cursor->x <= fields[i].value.x + fields[i].value.l)
 					{
 						char *p = getfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
 						strcpy(fields[i].value.c_value, p);
@@ -439,9 +444,9 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 				fprintf(stderr, "keyboard: %s\n", "KEY_BTAB");
 				for (int i=0; i<num_fields; i++)
 				{
-					if (cursor.y == fields[i].value.y &&
-						cursor.x >= fields[i].value.x && 
-						cursor.x <= fields[i].value.x + fields[i].value.l)
+					if (cursor->y == fields[i].value.y &&
+						  cursor->x >= fields[i].value.x && 
+						  cursor->x <= fields[i].value.x + fields[i].value.l)
 					{
 						char *p = getfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
 						strcpy(fields[i].value.c_value, p);
@@ -697,6 +702,8 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 	
 			case KEY_RESIZE:
 				fprintf(stderr, "keyboard: %s\n", "KEY_RESIZE");
+				(void) clear();
+				(void) paint(fields, num_fields, cursor, action);
 				break;
 
 			default:
@@ -704,12 +711,16 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR cursor, int ac
 				{
 					for (int i=0; i<num_fields; i++)
 					{
-						if (cursor.y == fields[i].value.y &&
-							cursor.x >= fields[i].value.x && 
-							cursor.x <  fields[i].value.x + fields[i].value.l)
+						if (cursor->y == fields[i].value.y &&
+							  cursor->x >= fields[i].value.x && 
+							  cursor->x <  fields[i].value.x + fields[i].value.l)
 						{
-							(void) attron(fields[i].value.fac);
-							(void) printw("%c", ch);
+							if (!((action & SELECT_MODE) && i == PLANT_NAME_FIELD))
+							{
+								(void) attron(fields[i].value.fac);
+								(void) printw("%c", ch);
+								xerror("Press (ENTER) to save.");
+							}
 							break;
 						}
 					}
