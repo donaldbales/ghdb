@@ -57,10 +57,11 @@ struct RECORD
 	char width[WIDTH_LENGTH + 1];
 	char planting_depth[PLANTING_DEPTH_LENGTH + 1];
 };
+#define NUM_FIELDS 5
 
 //define                0x00000001 // PF1
 #define FIRST_RECORD    0x00000002 // PF2
-//define                0x00000004 // PF3
+#define FIND_RECORD     0x00000004 // PF3
 #define PREVIOUS_RECORD 0x00000008 // PF4
 #define NEXT_RECORD     0x00000010 // PF5
 //define                0x00000020 // PF6
@@ -102,7 +103,7 @@ int ghdb_select_next(struct RECORD *record);
 int ghdb_select_previous(struct RECORD *record);
 int ghdb_update(struct RECORD *record);
 int init_record(struct RECORD *record);
-int keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned action);
+unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned action);
 int keymouse(struct FIELD fields[], int num_fields);
 int paint(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned action);
 int rtof(struct FIELD fields[], int num_fields, struct RECORD *record);

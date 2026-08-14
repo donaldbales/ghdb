@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <gdbm.h>
 #include <ncurses.h>
+#include <regex.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +36,190 @@ struct KEY_LIST *ghdb_key = NULL;
 static int compare_char_arrays(const void *a, const void *b)
 {
 	return strcmp(*(const char**)a, *(const char**)b); 
+}
+
+char *trim(char *string)
+{
+	for (int i=strlen(string) - 1; i >= 0; i--)
+	{
+		//printf("%d, '%c'\n", i, *(string+i));
+		if (*(string+i) == ' ')
+		{
+			*(string+i) = '\0';
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	return string;
+}
+
+int like(char *re, char *str, int *patterns, int *matches)
+{
+	char *buffer;
+	char *pattern;
+	char *string;
+	int errors = 0;
+	int n = 0;
+	int nbuffer = 1024;
+	int nregmatch = 1;
+	regex_t compiled;
+	regmatch_t regmatch[nregmatch];
+
+	pattern = malloc(strlen(re) + 1);
+	strcpy(pattern, re);
+	trim(pattern);
+	if (strlen(pattern) > 0)
+	{
+		n = regcomp(&compiled, pattern, REG_EXTENDED | REG_ICASE | REG_NEWLINE);
+		if (n == 0)
+		{
+			fprintf(stderr, "pattern compiled successfully\n");
+		}
+		else
+		{
+			buffer = malloc(nbuffer + 1);
+			regerror(n, &compiled, buffer, nbuffer);
+			fprintf(stderr, "pattern compilation error: %s\n", buffer);
+			xerror(buffer);
+			free(buffer);
+			errors++;
+		}
+
+		if (n == 0)
+		{
+			(*patterns)++;
+			string = malloc(strlen(str) + 1);
+			strcpy(string, str);
+			trim(string);
+			n = regexec(&compiled, string, nregmatch, regmatch, 0);
+			if (n == 0)
+			{
+				(*matches)++;
+				fprintf(stderr, "it matches\n");
+			}
+			else if (n == REG_NOMATCH)
+			{
+				fprintf(stderr, "no match\n");
+			}
+			else
+			{
+				buffer = malloc(nbuffer + 1);
+				regerror(n, &compiled, buffer, nbuffer);
+				fprintf(stderr, "pattern match error: %s\n", buffer);
+				xerror(buffer);
+				free(buffer);
+				errors++;
+			}
+			free(string);
+		}
+		regfree(&compiled);
+	}
+	free(pattern);
+
+	return errors;
+}
+
+int find_like(struct RECORD *record)
+{
+	int patterns = 0;
+	int matches = 0;
+	char *re;
+	char *str;
+	struct RECORD *local_record;
+	datum content;
+	datum key;
+	struct KEY_LIST *p = NULL;
+	struct KEY_LIST *first = NULL;
+	struct KEY_LIST *prev = NULL;
+	struct KEY_LIST *local_key = NULL;
+	GDBM_FILE gdbm_file = ghdb_open();
+
+	fprintf(stderr, "find_like(): build key list.\n");
+	local_record = malloc(sizeof(struct RECORD));
+	init_record(local_record);
+	ghdb_key = NULL;
+	ghdb_select_first(local_record);
+	free(local_record);
+	local_record = NULL;
+	p = ghdb_key;
+	if (p != NULL)
+	{
+		xerror("Searching...");
+		do
+		{
+			fprintf(stderr, "find_like(): get a record from the database.\n");
+			local_record = malloc(sizeof(struct RECORD));
+			init_record(local_record);
+			fprintf(stderr, "find_like():ghdb_key='%p'\n", p);
+			key.dptr = ((struct KEY_LIST *)p)->key;
+			key.dsize = PLANT_NAME_LENGTH;
+			fprintf(stderr, "find_like(): key.dptr='%s'\n", key.dptr);
+			fprintf(stderr, "find_like(): key.dsize='%d'\n", key.dsize);
+			content = gdbm_fetch(gdbm_file, key);
+			if (content.dptr != NULL)
+			{
+				memcpy(local_record, content.dptr, content.dsize);
+				xerror("");
+			}
+			else if (gdbm_errno == GDBM_ITEM_NOT_FOUND)
+			{
+				fprintf(stderr, "find_like(): record not found.\n");
+				xerror("Record not found.");
+			}
+			else
+			{
+				xerror(gdbm_db_strerror(gdbm_file));
+			}
+
+			fprintf(stderr, "find_like(): create the re.\n");
+			re = malloc(strlen(record->plant_name) + 1);
+			strcpy(re, record->plant_name);
+			if (strlen(trim(re)) > 0)
+			{
+				patterns = 0;
+				matches = 0;
+				fprintf(stderr, "find_like(): create the str.\n");
+				str = malloc(strlen(local_record->plant_name) + 1);
+				strcpy(str, local_record->plant_name);
+				fprintf(stderr, "find_like(): Before like.\n");
+				like(re, str, &patterns, &matches);
+				fprintf(stderr, "find_like(): After like, patterns=%d, matches=%d.\n\n", patterns, matches);
+				free(str);
+			}
+			free(local_record);
+			free(re);
+
+
+			if (patterns == matches)
+			{
+				fprintf(stderr, "find_like(): Found a record: '%s'\n", p->key);
+				local_key = malloc(sizeof(struct KEY_LIST));
+				if (first == NULL)
+				{
+					first = local_key;
+				}
+				local_key->prev = prev;
+				local_key->key = p->key;
+				local_key->next = NULL;
+				if (prev != NULL)
+				{
+					((struct KEY_LIST *)prev)->next = local_key;
+				}
+				prev = local_key;
+			}
+			p = p->next;
+			fprintf(stderr, "find_like(): the next key is %p\n", p);
+		}
+		while (p != NULL);
+	}
+	xerror("Done.");
+	// NOTE: free all the ghdk_key structs
+	ghdb_key = first;
+
+	return 0;
 }
 
 /*
@@ -204,27 +389,55 @@ int ghdb_select(struct RECORD *record)
 	datum content;
 	datum key;
 	GDBM_FILE gdbm_file = ghdb_open();
+	int nrecords = 0;
+	char string[50];
+	struct KEY_LIST *p;
 
-	key.dptr = record->plant_name;
-	key.dsize = PLANT_NAME_LENGTH;
-	content = gdbm_fetch(gdbm_file, key);
-	if (content.dptr != NULL)
+	fprintf(stderr, "Before find_like(record)\n");
+	find_like(record);
+	fprintf(stderr, "After find_like(record), ghdb_key=%p\n", ghdb_key);
+
+	if (ghdb_key != NULL)
 	{
-		memcpy(record, content.dptr, content.dsize);
-		xerror("");
-	}
-	else if (gdbm_errno == GDBM_ITEM_NOT_FOUND)
-	{
-		xerror("Record not found.");
+		p = ghdb_key;
+		fprintf(stderr, "p=%p\n", p);
+		while (p != NULL)
+		{
+			nrecords++;
+			fprintf(stderr, "p->next=%p\n", p->next);
+			p = p->next;
+		};
+
+		fprintf(stderr, "After find_like(record), ghdb_key=%p, nrecords=%d\n", ghdb_key, nrecords);
+
+		key.dptr = ghdb_key->key;
+		fprintf(stderr, "ghdb_select(): key.dptr='%s'\n", key.dptr);
+		key.dsize = PLANT_NAME_LENGTH;
+		content = gdbm_fetch(gdbm_file, key);
+		if (content.dptr != NULL)
+		{
+
+			memcpy(record, content.dptr, content.dsize);
+			sprintf(string, "%d %s", nrecords, "records found. Press (ENTER) to update.");
+			xerror(string);
+		}
+		else if (gdbm_errno == GDBM_ITEM_NOT_FOUND)
+		{
+			xerror("Record not found.");
+		}
+		else
+		{
+			xerror(gdbm_db_strerror(gdbm_file));
+		}
 	}
 	else
 	{
-		xerror(gdbm_db_strerror(gdbm_file));
-	}
-	
+		xerror("Record not found.");
+	}	
+
 	fprintf(stderr, "Returning from ghdb_select()\n");
 
-	return 0;
+	return nrecords;
 }
 
 	/*
@@ -265,7 +478,7 @@ int ghdb_select_first(struct RECORD *record)
 	void *prev = NULL;
 	GDBM_FILE gdbm_file = ghdb_open();
 	gdbm_count(gdbm_file, &ghdb_count);
-	sprintf(message, "First of %lld records.", ghdb_count);
+	sprintf(message, "First of %lld records. Press (ENTER) to update.", ghdb_count);
 	xerror(message);
 
 	/* create an array big enough to hold all the current keys */
@@ -360,7 +573,7 @@ int ghdb_select_next(struct RECORD *record)
 		{
 			memcpy(record, content.dptr, content.dsize);
 			free(content.dptr);
-			xerror("");
+			xerror("Press (ENTER) to update.");
 		}
 		else if (gdbm_errno == GDBM_ITEM_NOT_FOUND)
 		{
@@ -373,7 +586,7 @@ int ghdb_select_next(struct RECORD *record)
 	}
 	else
 	{
-		xerror("Last record.");
+		xerror("Last record. Press (ENTER) to update.");
 	}
 
 	return 0;
@@ -396,7 +609,7 @@ int ghdb_select_previous(struct RECORD *record)
 		{
 			memcpy(record, content.dptr, content.dsize);
 			free(content.dptr);
-			xerror("");
+			xerror("Press (ENTER) to update.");
 		}
 		else if (gdbm_errno == GDBM_ITEM_NOT_FOUND)
 		{
@@ -409,7 +622,7 @@ int ghdb_select_previous(struct RECORD *record)
 	}
 	else
 	{
-		xerror("First record.");
+		xerror("First record. Press (ENTER) to update.");
 	}
 
 	return 0;

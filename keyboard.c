@@ -47,7 +47,7 @@ char *getfld(const int y, const int x, const int l)
 	return field;
 }
 
-int keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned action)
+unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned action)
 {
 	struct CURSOR curmax;
 	(void) getmaxyx(stdscr, curmax.y, curmax.x);
@@ -109,23 +109,37 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsig
 						fprintf(stderr, "RETURN: %s\n", fields[i].value.c_value);
 					}
 				}
-				if      (action & INSERT_MODE)
+				switch (action)
 				{
-					return (INSERT_MODE | ENTER);
+					case (INSERT_MODE):
+						fprintf(stderr, "RETURN: (INSERT_MODE)\n");
+						return (INSERT_MODE | ENTER);
+						break;
+					case (DELETE_MODE):
+						fprintf(stderr, "RETURN: (DELETE_MODE)\n");
+						return (DELETE_MODE | ENTER);
+						break;
+					case (SELECT_MODE | FIND_RECORD):
+						fprintf(stderr, "RETURN: (SELECT_MODE | FIND_RECORD)\n");
+						return (SELECT_MODE | ENTER);
+						break;
+					case (SELECT_MODE | FIRST_RECORD):
+						fprintf(stderr, "RETURN: (SELECT_MODE | FIRST_RECORD)\n");
+						return (SELECT_MODE | UPDATE_RECORD); // pressing ENTER in SELECT_MODE must mean UPDATE
+						break;
+					case (SELECT_MODE | NEXT_RECORD):
+						fprintf(stderr, "RETURN: (SELECT_MODE | NEXT_RECORD)\n");
+						return (SELECT_MODE | UPDATE_RECORD); // pressing ENTER in SELECT_MODE must mean UPDATE
+						break;
+					case (SELECT_MODE | PREVIOUS_RECORD):
+						fprintf(stderr, "RETURN: (SELECT_MODE | PREVIOUS_RECORD)\n");
+						return (SELECT_MODE | UPDATE_RECORD); // pressing ENTER in SELECT_MODE must mean UPDATE
+						break;
+					case (UPDATE_MODE):
+						fprintf(stderr, "RETURN: (UPDATE_MODE)\n");
+						return (UPDATE_MODE | ENTER);
+						break;
 				}
-				else if (action & DELETE_MODE)
-				{
-					return (DELETE_MODE | ENTER);
-				}
-				else if (action & SELECT_MODE)
-				{
-					return (SELECT_MODE | UPDATE_RECORD); // pressing ENTER in SELECT_MODE must mean UPDATE
-				}
-				else if (action & UPDATE_MODE)
-				{
-					return (UPDATE_MODE | ENTER);
-				}
-				break;
 
 			case KEY_CODE_YES:
 				fprintf(stderr, "keyboard: %s\n", "KEY_CODE_YES");
@@ -200,13 +214,14 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsig
 						  cursor->x >  fields[i].value.x && 
 						  cursor->x <= fields[i].value.x + fields[i].value.l)
 					{
-							if (!((action & SELECT_MODE) && i == PLANT_NAME_FIELD))
+							if (action == INSERT_MODE ||
+									action == (SELECT_MODE | FIND_RECORD) || 
+									i != PLANT_NAME_FIELD)
 							{
 								(void) move(cursor->y, --cursor->x);
 								(void) attron(fields[i].value.fac);
 								(void) printw("%c", 32);
 								(void) move(cursor->y, cursor->x);
-								xerror("Press (ENTER) to save.");
 							}
 						break;
 					}
@@ -229,7 +244,7 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsig
 	
 			case KEY_F(3):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(3)");
-				return (SELECT_MODE);
+				return (SELECT_MODE | FIND_RECORD);
 				break;
 	
 			case KEY_F(4):
@@ -250,7 +265,6 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsig
 	
 			case KEY_F(6):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(6)");
-				xerror("Press (ENTER) to confirm delete.");
 				return (DELETE_MODE);
 				break;
 	
@@ -715,11 +729,12 @@ int keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsig
 							  cursor->x >= fields[i].value.x && 
 							  cursor->x <  fields[i].value.x + fields[i].value.l)
 						{
-							if (!((action & SELECT_MODE) && i == PLANT_NAME_FIELD))
+							if (action == INSERT_MODE ||
+									action == (SELECT_MODE | FIND_RECORD) || 
+									i != PLANT_NAME_FIELD)
 							{
 								(void) attron(fields[i].value.fac);
 								(void) printw("%c", ch);
-								xerror("Press (ENTER) to save.");
 							}
 							break;
 						}

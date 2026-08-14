@@ -188,6 +188,7 @@ int terminal()
 {
 	unsigned action = INSERT_MODE; // start out in insert mode
 	int num_fields = 5;
+	int nrecords = 0;
 	struct FIELD fields[num_fields];
 	struct CURSOR cursor = { -1, -1 };
 	struct RECORD record = { "", "", "", "", "" };
@@ -206,46 +207,67 @@ int terminal()
 	{
 		switch (action)
 		{
-			case (SELECT_MODE):
+			case (SELECT_MODE | FIND_RECORD):
+				fprintf(stderr, "SELECT_MODE | FIND_RECORD\n");
 				(void) init_record(&record);
 				(void) rtof(fields, num_fields, &record);
 				(void) paint(fields, num_fields, &cursor, action);
+				xerror("Press (ENTER) to execute query.");
 				break;
 			case (SELECT_MODE | ENTER):
+				fprintf(stderr, "SELECT_MODE | ENTER\n");
 				(void) ftor(fields, num_fields, &record);
-				(void) ghdb_select(&record);
+				nrecords = ghdb_select(&record);
 				(void) rtof(fields, num_fields, &record);
+				if (nrecords == 0)
+				{
+					action = (SELECT_MODE | FIND_RECORD);
+				}
+				else
+				{
+					action = (SELECT_MODE | FIRST_RECORD);
+				}
 				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (SELECT_MODE | FIRST_RECORD):
+				fprintf(stderr, "SELECT_MODE | FIRST_RECORD\n");
 				(void) init_record(&record);
 				(void) rtof(fields, num_fields, &record);
 				(void) ghdb_select_first(&record);
 				(void) rtof(fields, num_fields, &record);
 				(void) paint(fields, num_fields, &cursor, action);
+				//xerror("Press (ENTER) to update.");
 				break;
 			case (SELECT_MODE | NEXT_RECORD):
+				fprintf(stderr, "SELECT_MODE | NEXT_RECORD\n");
 				(void) ghdb_select_next(&record);
 				(void) rtof(fields, num_fields, &record);
 				(void) paint(fields, num_fields, &cursor, action);
+				//xerror("Press (ENTER) to update.");
 				break;
 			case (SELECT_MODE | PREVIOUS_RECORD):
+				fprintf(stderr, "SELECT_MODE | PREVIOUS_RECORD\n");
 				(void) ghdb_select_previous(&record);
 				(void) rtof(fields, num_fields, &record);
 				(void) paint(fields, num_fields, &cursor, action);
+				//xerror("Press (ENTER) to update.");
 				break;
 			case (SELECT_MODE | UPDATE_RECORD):
+				fprintf(stderr, "SELECT_MODE | UPDATE_RECORD\n");
 				(void) ftor(fields, num_fields, &record);
 				(void) ghdb_update(&record);
 				action = (SELECT_MODE | FIRST_RECORD);
 				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (INSERT_MODE):
+				fprintf(stderr, "INSERT_MODE\n");
 				(void) init_record(&record);
 				(void) rtof(fields, num_fields, &record);
 				(void) paint(fields, num_fields, &cursor, action);
+				xerror("Press (ENTER) to insert record.");
 				break;
 			case (INSERT_MODE | ENTER):
+				fprintf(stderr, "SELECT_MODE | ENTER\n");
 				(void) ftor(fields, num_fields, &record);
 				(void) ghdb_insert(&record);
 				(void) init_record(&record);
@@ -254,14 +276,17 @@ int terminal()
 				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (UPDATE_MODE):
+				fprintf(stderr, "UPDATE_MODE\n");
 				xerror("ERROR: UPDATE_MODE, DOES NOT EXIST.");
 				break;
 			case (UPDATE_MODE | ENTER):
+				fprintf(stderr, "UPDATE_MODE | ENTER\n");
 				xerror("ERROR: UPDATE_MODE | ENTER, DOES NOT EXIST.");
 				break;
 			case (DELETE_MODE):
 				xerror("DELETED_MODE");
 				(void) paint(fields, num_fields, &cursor, action);
+				xerror("Press (ENTER) to confirm delete.");
 				break;
 			case (DELETE_MODE | ENTER):
 				xerror("DELETE_MODE | ENTER");
@@ -272,7 +297,8 @@ int terminal()
 				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			default:
-				xerror("ERROR: DEFAULT, DOES NOT EXIST.");
+				fprintf(stderr, "DEFAULT_MODE\n");
+				xerror("ERROR: DEFAULT_MODE, DOES NOT EXIST.");
 		}
 
 		(void) refresh();
