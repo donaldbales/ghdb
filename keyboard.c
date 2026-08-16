@@ -270,10 +270,12 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 	
 			case KEY_F(7):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(7)");
+				return (IMPORT_MODE);
 				break;
 	
 			case KEY_F(8):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(8)");
+				return (EXPORT_MODE);
 				break;
 	
 			case KEY_F(9):

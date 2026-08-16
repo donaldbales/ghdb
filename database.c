@@ -15,7 +15,7 @@
  */
 struct FREE_LIST
 {
-	void *prev;
+	struct FREE_LIST *prev;
 };
 struct FREE_LIST *free_list = NULL;
 
@@ -24,9 +24,9 @@ struct FREE_LIST *free_list = NULL;
  */
 struct KEY_LIST 
 {
-	void *prev;
+	struct KEY_LIST *prev;
 	char *key;
-	void *next;
+	struct KEY_LIST *next;
 };
 struct KEY_LIST *ghdb_key = NULL;
 
@@ -225,7 +225,7 @@ int find_like(struct RECORD *record)
 /*
  Close
  */
-void ghdb_close(GDBM_FILE gdbm_file)
+int ghdb_close(GDBM_FILE gdbm_file)
 {
 	if (gdbm_close(gdbm_file) == 0)
 	{
@@ -236,7 +236,8 @@ void ghdb_close(GDBM_FILE gdbm_file)
 		fprintf(stderr, "can't close the database: %s\n", gdbm_strerror (gdbm_errno));
 		exit(EXIT_FAILURE);
 	}
-	return;
+	
+	return 0;
 }
 
 	/*
@@ -287,6 +288,18 @@ int ghdb_delete(struct RECORD *record)
 	{
 		fprintf(stderr, "can't delete from database: %s\n", gdbm_strerror (gdbm_errno));
 	}
+
+	return 0;
+}
+
+int ghdb_export()
+{
+
+	return 0;
+}
+
+int ghdb_import()
+{
 
 	return 0;
 }
@@ -363,14 +376,14 @@ int ghdb_insert(struct RECORD *record)
 /*
  Open
  */
-void *ghdb_open() 
+void *ghdb_open()
 {
 	static GDBM_FILE gdbm_file = NULL;
 	char* gdbm_file_filename = "ghdb.gbm"; 
 
 	if (gdbm_file == NULL)
 	{
-		gdbm_file = gdbm_open(gdbm_file_filename, 0, GDBM_WRCREAT, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH), NULL);
+		gdbm_file = gdbm_open(gdbm_file_filename, 0, GDBM_WRCREAT | GDBM_NUMSYNC, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH), NULL);
 	}
 	if (gdbm_file == NULL)
 	{
@@ -390,7 +403,7 @@ int ghdb_select(struct RECORD *record)
 	datum key;
 	GDBM_FILE gdbm_file = ghdb_open();
 	int nrecords = 0;
-	char string[50];
+	char string[75];
 	struct KEY_LIST *p;
 
 	fprintf(stderr, "Before find_like(record)\n");
@@ -547,10 +560,12 @@ int ghdb_select_first(struct RECORD *record)
 	else if (gdbm_errno == GDBM_ITEM_NOT_FOUND)
 	{
 		xerror("Record not found.");
+		return 1;
 	}
 	else
 	{
 		xerror(gdbm_db_strerror(gdbm_file));
+		return -1;
 	}
 
 	return 0;
@@ -578,15 +593,18 @@ int ghdb_select_next(struct RECORD *record)
 		else if (gdbm_errno == GDBM_ITEM_NOT_FOUND)
 		{
 			xerror("Record not found.");
+			return 1;
 		}
 		else
 		{
 			xerror(gdbm_db_strerror(gdbm_file));
+			return -1;
 		}
 	}
 	else
 	{
 		xerror("Last record. Press (ENTER) to update.");
+		return 1;
 	}
 
 	return 0;
@@ -745,4 +763,111 @@ int init_record(struct RECORD *record)
 
 	return 0;
 }
+
+int tsv_export()
+{
+	char filename[9] = "ghdb.tsv";
+	FILE *file;
+	int n = 0;
+	struct RECORD record;
+
+	errno = 0;
+	file = fopen(filename, "w");
+	if (file == NULL)
+	{
+		fprintf(stderr, "Could not open %s: %s\n", filename, strerror(errno));
+		exit (EXIT_FAILURE);
+	}
+	fprintf(file, "PLANT_NAME\tLATIN_NAME\tHEIGHT\tWIDTH\tPLANTING_DEPTH\n");
+
+	(void) init_record(&record);
+	n = ghdb_select_first(&record);
+	while (n == 0)
+	{
+		fprintf(file, "%s\t%s\t%s\t%s\t%s\n",
+			trim(record.plant_name),
+			trim(record.latin_name),
+			trim(record.height),
+			trim(record.width),
+			trim(record.planting_depth));
+
+		n = ghdb_select_next(&record);
+	}
+	fclose(file);
+
+	return 0;
+}
+
+int tsv_import()
+{
+	char filename[9] = "ghdb.tsv";
+	FILE *file = NULL;
+	char *line = NULL;
+	char plant_name[PLANT_NAME_LENGTH + 1];
+	char latin_name[LATIN_NAME_LENGTH + 1];
+	char height[HEIGHT_LENGTH + 1];
+	char width[WIDTH_LENGTH + 1];
+	char planting_depth[PLANTING_DEPTH_LENGTH + 1];
+	int n = 0;
+	size_t size = 0;
+	struct RECORD record;
+
+	errno = 0;
+	file = fopen(filename, "r");
+	if (file == NULL)
+	{
+		fprintf(stderr, "Could not open %s: %s\n", filename, strerror(errno));
+		exit (EXIT_FAILURE);
+	}
+	while ((n = getline(&line, &size, file)) != -1)
+	{
+		fprintf(stderr, "tsv_import: getline=%d\n", n);
+		n = sscanf(line, "%s\t%s\t%s\t%s\t%s\n",
+				plant_name,
+				latin_name,
+				height,
+				width,
+				planting_depth);
+		fprintf(stderr, "tsv_import: sscanf=%d\n", n);
+		if (n == 5)
+		{
+			n = strcmp("PLANT_NAME", plant_name);
+			fprintf(stderr, "tsv_import: strcmp=%d\n", n);
+			if (n != 0)
+			{
+				(void) init_record(&record);
+				memcpy(record.plant_name, plant_name, strlen(plant_name));
+				memcpy(record.latin_name, latin_name, strlen(latin_name));
+				memcpy(record.height, height, strlen(height));
+				memcpy(record.width, width, strlen(width));
+				memcpy(record.planting_depth, planting_depth, strlen(planting_depth));
+				n = ghdb_update(&record);
+				fprintf(stderr, "tsv_import: ghdb_update=%d\n", n);
+			}
+		}
+
+		free(line);
+		line = NULL;
+	}
+	fclose(file);
+
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -17,12 +17,12 @@ rm -f trace; env NCURSES_TRACE=1 ghdb 2>ghdb.err; cat ghdb.err
 
 /*
     TODO?
-    Use left or right arrow keys to insert text in a field
-    Save the binary data to a file
-    Read the binary data from a file
-    Save the delimited data to a file
-    Read the delimited data from a file
-    Scroll to the next record
+    Use left or right arrow keys to insert text in a field?
+X   Save the binary data to a file
+X   Read the binary data from a file
+X   Save the delimited data to a file
+X   Read the delimited data from a file
+X   Scroll to the next record
 */
 
 int main()

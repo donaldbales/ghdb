@@ -11,13 +11,6 @@
  */
 int rtof(struct FIELD fields[], int num_fields, struct RECORD *record)
 {
-	/*
-	strncpy(fields[PLANT_NAME_FIELD].value.c_value, record->plant_name, PLANT_NAME_LENGTH);
-	strncpy(fields[LATIN_NAME_FIELD].value.c_value, record->latin_name, LATIN_NAME_LENGTH);
-	strncpy(fields[HEIGHT_FIELD].value.c_value, record->height, HEIGHT_LENGTH);
-	strncpy(fields[WIDTH_FIELD].value.c_value, record->width, WIDTH_LENGTH);
-	strncpy(fields[PLANTING_DEPTH_FIELD].value.c_value, record->planting_depth, PLANTING_DEPTH_LENGTH);
-	*/
 	strcpy(fields[PLANT_NAME_FIELD].value.c_value, record->plant_name);
 	strcpy(fields[LATIN_NAME_FIELD].value.c_value, record->latin_name);
 	strcpy(fields[HEIGHT_FIELD].value.c_value, record->height);
@@ -32,13 +25,6 @@ int rtof(struct FIELD fields[], int num_fields, struct RECORD *record)
  */
 int ftor(struct FIELD fields[], int num_fields, struct RECORD *record)
 {
-	/*
-	strncpy(record->plant_name, fields[PLANT_NAME_FIELD].value.c_value, PLANT_NAME_LENGTH);
-	strncpy(record->latin_name, fields[LATIN_NAME_FIELD].value.c_value, LATIN_NAME_LENGTH);
-	strncpy(record->height, fields[HEIGHT_FIELD].value.c_value, HEIGHT_LENGTH);
-	strncpy(record->width, fields[WIDTH_FIELD].value.c_value, WIDTH_LENGTH);
-	strncpy(record->planting_depth, fields[PLANTING_DEPTH_FIELD].value.c_value, PLANTING_DEPTH_LENGTH);
-	*/
 	strcpy(record->plant_name, fields[PLANT_NAME_FIELD].value.c_value);
 	strcpy(record->latin_name, fields[LATIN_NAME_FIELD].value.c_value);
 	strcpy(record->height, fields[HEIGHT_FIELD].value.c_value);
@@ -295,6 +281,22 @@ int terminal()
 				(void) rtof(fields, num_fields, &record);
 				action = INSERT_MODE;
 				(void) paint(fields, num_fields, &cursor, action);
+				break;
+			case (EXPORT_MODE):
+				(void) tsv_export();
+				(void) init_record(&record);
+				(void) rtof(fields, num_fields, &record);
+				action = INSERT_MODE;
+				(void) paint(fields, num_fields, &cursor, action);
+				xerror("Records exported as tab-separated values.");
+				break;
+			case (IMPORT_MODE):
+				(void) tsv_import();
+				(void) init_record(&record);
+				(void) rtof(fields, num_fields, &record);
+				action = INSERT_MODE;
+				(void) paint(fields, num_fields, &cursor, action);
+				xerror("Records imported from tab-separated values.");
 				break;
 			default:
 				fprintf(stderr, "DEFAULT_MODE\n");

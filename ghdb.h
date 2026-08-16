@@ -65,8 +65,8 @@ struct RECORD
 #define PREVIOUS_RECORD 0x00000008 // PF4
 #define NEXT_RECORD     0x00000010 // PF5
 //define                0x00000020 // PF6
-//define                0x00000040 // PF7
-//define                0x00000080 // PF8
+#define IMPORT_MODE     0x00000040 // PF7
+#define EXPORT_MODE     0x00000080 // PF8
 //define                0x00000100 // PF9
 //define                0x00000200 // PF10
 //define                0x00000400 // PF11
@@ -74,7 +74,7 @@ struct RECORD
 //define                0x00001000 // PF13
 //define                0x00002000 // PF14
 //define                0x00004000 // PF15
-//define                0x00008000 // PF16
+#define EXIT_MODE       0x00008000 // PF16
 //define                0x00010000 // PF17
 //define                0x00020000 // PF18
 //define                0x00040000 // PF19
@@ -95,7 +95,10 @@ struct RECORD
 int fldlen(const int y, const int x, const int l);
 int formscrn(struct FIELD fields[], int num_fields);
 int ftor(struct FIELD fields[], int num_fields, struct RECORD *record);
+int ghdb_close(GDBM_FILE gdbm_file);
 int ghdb_delete(struct RECORD *record);
+int ghdb_export();
+int ghdb_import();
 int ghdb_insert(struct RECORD *record);
 int ghdb_select(struct RECORD *record);
 int ghdb_select_first(struct RECORD *record);
@@ -103,13 +106,14 @@ int ghdb_select_next(struct RECORD *record);
 int ghdb_select_previous(struct RECORD *record);
 int ghdb_update(struct RECORD *record);
 int init_record(struct RECORD *record);
-unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned action);
 int keymouse(struct FIELD fields[], int num_fields);
 int paint(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned action);
 int rtof(struct FIELD fields[], int num_fields, struct RECORD *record);
 int terminal();
+int tsv_export();
+int tsv_import();
 int xerror(const char *message);
+unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned action);
 void *ghdb_open();
-void ghdb_close(GDBM_FILE gdbm_file);
 
 #endif
