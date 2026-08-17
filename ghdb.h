@@ -37,17 +37,87 @@ struct CURSOR {
 	int x;
 };
 
-#define PLANT_NAME_FIELD      0
-#define LATIN_NAME_FIELD      1
-#define HEIGHT_FIELD          2
-#define WIDTH_FIELD           3
-#define PLANTING_DEPTH_FIELD  4
+#define PLANT_NAME_FIELD               0
+#define LATIN_NAME_FIELD               1
+#define HEIGHT_FIELD                   2
+#define WIDTH_FIELD                    3
+#define PLANTING_DEPTH_FIELD           4
+#define SEED_SIZE_FIELD                5
+#define SEED_NEED_LIGHT_FIELD          6
+#define SEED_SCARIFICATION_FIELD       7
+#define PH_FIELD                       8
+#define EC_FIELD                       9
+#define DAY_LIGHT_INTERVAL_FIELD      10
+#define PHOTOPERIOD_HOURS_FIELD       11
+#define LIGHT_LOWER_FIELD             12
+#define LIGHT_OPTIMAL_FIELD           13
+#define LIGHT_UPPER_FIELD             14
+#define NITROGEN_LOWER_FIELD          15
+#define NITROGEN_OPTIMAL_FIELD        16
+#define NITROGEN_UPPER_FIELD          17
+#define PHOSPHORUS_LOWER_FIELD        18
+#define PHOSPHORUS_OPTIMAL_FIELD      19
+#define PHOSPHORUS_UPPER_FIELD        20
+#define POTASSIUM_LOWER_FIELD         21
+#define POTASSIUM_OPTIMAL_FIELD       22
+#define POTASSIUM_UPPER_FIELD         23
+#define GERMINATION_LOWER_FIELD       24
+#define GERMINATION_NORMAL_FIELD      25
+#define GERMINATION_UPPER_FIELD       26
+#define TRANSPLANTING_LOWER_FIELD     27
+#define TRANSPLANTING_OPTIMAL_FIELD   28
+#define TRANSPLANTING_UPPER_FIELD     29
+#define MATURITY_LOWER_FIELD          30
+#define MATURITY_OPTIMAL_FIELD        31
+#define MATURITY_UPPER_FIELD          32
+#define KNOTTS_MATURITY_LOWER_FIELD   33
+#define KNOTTS_UPPER_FIELD            34
+#define KNOTTS_FROST_TOLERANCE_FIELD  35
+#define KNOTTS_TRANSPLANTABLE_FIELD   36
+#define FLOWERING_FIELD               37
+#define POLLINATION_PRIMARY_FIELD     38
+#define POLLINATION_SECONDARY_FIELD   39
 
-#define PLANT_NAME_LENGTH    30
-#define LATIN_NAME_LENGTH    30
-#define HEIGHT_LENGTH         5
-#define WIDTH_LENGTH          5
-#define PLANTING_DEPTH_LENGTH 5
+#define PLANT_NAME_LENGTH             30
+#define LATIN_NAME_LENGTH             30
+#define HEIGHT_LENGTH                  5
+#define WIDTH_LENGTH                   5
+#define PLANTING_DEPTH_LENGTH          5
+#define SEED_SIZE_LENGTH               5
+#define SEED_NEED_LIGHT_LENGTH         3
+#define SEED_SCARIFICATION_LENGTH      3
+#define PH_LENGTH                      5
+#define EC_LENGTH                      5
+#define DAY_LIGHT_INTERVAL_LENGTH      5
+#define PHOTOPERIOD_HOURS_LENGTH       5
+#define LIGHT_LOWER_LENGTH             5
+#define LIGHT_OPTIMAL_LENGTH           5
+#define LIGHT_UPPER_LENGTH             5
+#define NITROGEN_LOWER_LENGTH          5
+#define NITROGEN_OPTIMAL_LENGTH        5
+#define NITROGEN_UPPER_LENGTH          5
+#define PHOSPHORUS_LOWER_LENGTH        5
+#define PHOSPHORUS_OPTIMAL_LENGTH      5
+#define PHOSPHORUS_UPPER_LENGTH        5
+#define POTASSIUM_LOWER_LENGTH         5
+#define POTASSIUM_OPTIMAL_LENGTH       5
+#define POTASSIUM_UPPER_LENGTH         5
+#define GERMINATION_LOWER_LENGTH       5
+#define GERMINATION_NORMAL_LENGTH      5
+#define GERMINATION_UPPER_LENGTH       5
+#define TRANSPLANTING_LOWER_LENGTH     5
+#define TRANSPLANTING_OPTIMAL_LENGTH   5
+#define TRANSPLANTING_UPPER_LENGTH     5
+#define MATURITY_LOWER_LENGTH          5
+#define MATURITY_OPTIMAL_LENGTH        5
+#define MATURITY_UPPER_LENGTH          5
+#define KNOTTS_MATURITY_LOWER_LENGTH   5
+#define KNOTTS_UPPER_LENGTH            5
+#define KNOTTS_FROST_TOLERANCE_LENGTH  3
+#define KNOTTS_TRANSPLANTABLE_LENGTH   5
+#define FLOWERING_LENGTH               5
+#define POLLINATION_PRIMARY_LENGTH    30
+#define POLLINATION_SECONDARY_LENGTH  30
 
 struct RECORD
 {
@@ -56,8 +126,43 @@ struct RECORD
 	char height[HEIGHT_LENGTH + 1];
 	char width[WIDTH_LENGTH + 1];
 	char planting_depth[PLANTING_DEPTH_LENGTH + 1];
+	char seed_size[SEED_SIZE_LENGTH + 1];
+	char seed_need_light[SEED_NEED_LIGHT_LENGTH + 1];
+	char seed_scarification[SEED_SCARIFICATION_LENGTH + 1];
+	char ph[PH_LENGTH + 1];
+	char ec[EC_LENGTH + 1];
+	char day_light_interval[DAY_LIGHT_INTERVAL_LENGTH + 1];
+	char photoperiod_hours[PHOTOPERIOD_HOURS_LENGTH + 1];
+	char light_lower[LIGHT_LOWER_LENGTH + 1];
+	char light_optimal[LIGHT_OPTIMAL_LENGTH + 1];
+	char light_upper[LIGHT_UPPER_LENGTH + 1];
+	char nitrogen_lower[NITROGEN_LOWER_LENGTH + 1];
+	char nitrogen_optimal[NITROGEN_OPTIMAL_LENGTH + 1];
+	char nitrogen_upper[NITROGEN_UPPER_LENGTH + 1];
+	char phosphorus_lower[PHOSPHORUS_LOWER_LENGTH + 1];
+	char phosphorus_optimal[PHOSPHORUS_OPTIMAL_LENGTH + 1];
+	char phosphorus_upper[PHOSPHORUS_UPPER_LENGTH + 1];
+	char potassium_lower[POTASSIUM_LOWER_LENGTH + 1];
+	char potassium_optimal[POTASSIUM_OPTIMAL_LENGTH + 1];
+	char potassium_upper[POTASSIUM_UPPER_LENGTH + 1];
+	char germination_lower[GERMINATION_LOWER_LENGTH + 1];
+	char germination_normal[GERMINATION_NORMAL_LENGTH + 1];
+	char germination_upper[GERMINATION_UPPER_LENGTH + 1];
+	char transplanting_lower[TRANSPLANTING_LOWER_LENGTH + 1];
+	char transplanting_optimal[TRANSPLANTING_OPTIMAL_LENGTH + 1];
+	char transplanting_upper[TRANSPLANTING_UPPER_LENGTH + 1];
+	char maturity_lower[MATURITY_LOWER_LENGTH + 1];
+	char maturity_optimal[MATURITY_OPTIMAL_LENGTH + 1];
+	char maturity_upper[MATURITY_UPPER_LENGTH + 1];
+	char knotts_maturity_lower[KNOTTS_MATURITY_LOWER_LENGTH + 1];
+	char knotts_upper[KNOTTS_UPPER_LENGTH + 1];
+	char knotts_frost_tolerance[KNOTTS_FROST_TOLERANCE_LENGTH + 1];
+	char knotts_transplantable[KNOTTS_TRANSPLANTABLE_LENGTH + 1];
+	char flowering[FLOWERING_LENGTH + 1];
+	char pollination_primary[POLLINATION_PRIMARY_LENGTH + 1];
+	char pollination_secondary[POLLINATION_SECONDARY_LENGTH + 1];
 };
-#define NUM_FIELDS 5
+#define NUM_FIELDS 40
 
 //define                0x00000001 // PF1
 #define FIRST_RECORD    0x00000002 // PF2

@@ -12,6 +12,9 @@
 #include <unistd.h>
 #include "ghdb.h"
 
+/*
+ Unfortunately global
+ */
 GDBM_FILE gdbm_file = NULL;
 
 /*
@@ -46,7 +49,6 @@ char *trim(char *string)
 {
 	for (int i=strlen(string) - 1; i >= 0; i--)
 	{
-		//printf("%d, '%c'\n", i, *(string+i));
 		if (*(string+i) == ' ')
 		{
 			*(string+i) = '\0';
@@ -235,11 +237,6 @@ int ghdb_close()
 	{
 		gdbm_close(gdbm_file);
 		gdbm_file = NULL;
-	}
-	else
-	{
-		fprintf(stderr, "can't close the database: %s\n", gdbm_strerror (gdbm_errno));
-		exit(EXIT_FAILURE);
 	}
 	
 	return 0;
@@ -791,35 +788,247 @@ int ghdb_update(struct RECORD *record)
  */
 int init_record(struct RECORD *record)
 {
-	for (int i=0; i<PLANT_NAME_LENGTH; i++)
+	int i = 0;
+
+	for (i=0; i<PLANT_NAME_LENGTH; i++)
 	{
 		record->plant_name[i]= ' ';
 	}
 	record->plant_name[PLANT_NAME_LENGTH] = '\0';
 
-	for (int i=0; i<LATIN_NAME_LENGTH; i++)
+	for (i=0; i<LATIN_NAME_LENGTH; i++)
 	{
 		record->latin_name[i]= ' ';
 	}
 	record->latin_name[LATIN_NAME_LENGTH] = '\0';
 
-	for (int i=0; i<HEIGHT_LENGTH; i++)
+	for (i=0; i<HEIGHT_LENGTH; i++)
 	{
 		record->height[i]= ' ';
 	}
 	record->height[HEIGHT_LENGTH] = '\0';
 
-	for (int i=0; i<WIDTH_LENGTH; i++)
+	for (i=0; i<WIDTH_LENGTH; i++)
 	{
 		record->width[i]= ' ';
 	}
 	record->width[WIDTH_LENGTH] = '\0';
 
-	for (int i=0; i<PLANTING_DEPTH_LENGTH; i++)
+	for (i=0; i<PLANTING_DEPTH_LENGTH; i++)
 	{
 		record->planting_depth[i]= ' ';
 	}
 	record->planting_depth[PLANTING_DEPTH_LENGTH] = '\0';
+
+	for (i=0; i<SEED_SIZE_LENGTH; i++)
+	{
+		record->seed_size[i]= ' ';
+	}
+	record->seed_size[SEED_SIZE_LENGTH] = '\0';
+
+	for (i=0; i<SEED_NEED_LIGHT_LENGTH; i++)
+	{
+		record->seed_need_light[i]= ' ';
+	}
+	record->seed_need_light[SEED_NEED_LIGHT_LENGTH] = '\0';
+
+	for (i=0; i<SEED_SCARIFICATION_LENGTH; i++)
+	{
+		record->seed_scarification[i]= ' ';
+	}
+	record->seed_scarification[SEED_SCARIFICATION_LENGTH] = '\0';
+
+	for (i=0; i<PH_LENGTH; i++)
+	{
+		record->ph[i]= ' ';
+	}
+	record->ph[PH_LENGTH] = '\0';
+
+	for (i=0; i<EC_LENGTH; i++)
+	{
+		record->ec[i]= ' ';
+	}
+	record->ec[EC_LENGTH] = '\0';
+
+	for (i=0; i<DAY_LIGHT_INTERVAL_LENGTH; i++)
+	{
+		record->day_light_interval[i]= ' ';
+	}
+	record->day_light_interval[DAY_LIGHT_INTERVAL_LENGTH] = '\0';
+
+	for (i=0; i<PHOTOPERIOD_HOURS_LENGTH; i++)
+	{
+		record->photoperiod_hours[i]= ' ';
+	}
+	record->photoperiod_hours[PHOTOPERIOD_HOURS_LENGTH] = '\0';
+
+	for (i=0; i<LIGHT_LOWER_LENGTH; i++)
+	{
+		record->light_lower[i]= ' ';
+	}
+	record->light_lower[LIGHT_LOWER_LENGTH] = '\0';
+
+	for (i=0; i<LIGHT_OPTIMAL_LENGTH; i++)
+	{
+		record->light_optimal[i]= ' ';
+	}
+	record->light_optimal[LIGHT_OPTIMAL_LENGTH] = '\0';
+
+	for (i=0; i<LIGHT_UPPER_LENGTH; i++)
+	{
+		record->light_upper[i]= ' ';
+	}
+	record->light_upper[LIGHT_UPPER_LENGTH] = '\0';
+
+	for (i=0; i<NITROGEN_LOWER_LENGTH; i++)
+	{
+		record->nitrogen_lower[i]= ' ';
+	}
+	record->nitrogen_lower[NITROGEN_LOWER_LENGTH] = '\0';
+
+	for (i=0; i<NITROGEN_OPTIMAL_LENGTH; i++)
+	{
+		record->nitrogen_optimal[i]= ' ';
+	}
+	record->nitrogen_optimal[NITROGEN_OPTIMAL_LENGTH] = '\0';
+
+	for (i=0; i<NITROGEN_UPPER_LENGTH; i++)
+	{
+		record->nitrogen_upper[i]= ' ';
+	}
+	record->nitrogen_upper[NITROGEN_UPPER_LENGTH] = '\0';
+
+	for (i=0; i<PHOSPHORUS_LOWER_LENGTH; i++)
+	{
+		record->phosphorus_lower[i]= ' ';
+	}
+	record->phosphorus_lower[PHOSPHORUS_LOWER_LENGTH] = '\0';
+
+	for (i=0; i<PHOSPHORUS_OPTIMAL_LENGTH; i++)
+	{
+		record->phosphorus_optimal[i]= ' ';
+	}
+	record->phosphorus_optimal[PHOSPHORUS_OPTIMAL_LENGTH] = '\0';
+
+	for (i=0; i<PHOSPHORUS_UPPER_LENGTH; i++)
+	{
+		record->phosphorus_upper[i]= ' ';
+	}
+	record->phosphorus_upper[PHOSPHORUS_UPPER_LENGTH] = '\0';
+
+	for (i=0; i<POTASSIUM_LOWER_LENGTH; i++)
+	{
+		record->potassium_lower[i]= ' ';
+	}
+	record->potassium_lower[POTASSIUM_LOWER_LENGTH] = '\0';
+
+	for (i=0; i<POTASSIUM_OPTIMAL_LENGTH; i++)
+	{
+		record->potassium_optimal[i]= ' ';
+	}
+	record->potassium_optimal[POTASSIUM_OPTIMAL_LENGTH] = '\0';
+
+	for (i=0; i<POTASSIUM_UPPER_LENGTH; i++)
+	{
+		record->potassium_upper[i]= ' ';
+	}
+	record->potassium_upper[POTASSIUM_UPPER_LENGTH] = '\0';
+
+	for (i=0; i<GERMINATION_LOWER_LENGTH; i++)
+	{
+		record->germination_lower[i]= ' ';
+	}
+	record->germination_lower[GERMINATION_LOWER_LENGTH] = '\0';
+
+	for (i=0; i<GERMINATION_NORMAL_LENGTH; i++)
+	{
+		record->germination_normal[i]= ' ';
+	}
+	record->germination_normal[GERMINATION_NORMAL_LENGTH] = '\0';
+
+	for (i=0; i<GERMINATION_UPPER_LENGTH; i++)
+	{
+		record->germination_upper[i]= ' ';
+	}
+	record->germination_upper[GERMINATION_UPPER_LENGTH] = '\0';
+
+	for (i=0; i<TRANSPLANTING_LOWER_LENGTH; i++)
+	{
+		record->transplanting_lower[i]= ' ';
+	}
+	record->transplanting_lower[TRANSPLANTING_LOWER_LENGTH] = '\0';
+
+	for (i=0; i<TRANSPLANTING_OPTIMAL_LENGTH; i++)
+	{
+		record->transplanting_optimal[i]= ' ';
+	}
+	record->transplanting_optimal[TRANSPLANTING_OPTIMAL_LENGTH] = '\0';
+
+	for (i=0; i<TRANSPLANTING_UPPER_LENGTH; i++)
+	{
+		record->transplanting_upper[i]= ' ';
+	}
+	record->transplanting_upper[TRANSPLANTING_UPPER_LENGTH] = '\0';
+
+	for (i=0; i<MATURITY_LOWER_LENGTH; i++)
+	{
+		record->maturity_lower[i]= ' ';
+	}
+	record->maturity_lower[MATURITY_LOWER_LENGTH] = '\0';
+
+	for (i=0; i<MATURITY_OPTIMAL_LENGTH; i++)
+	{
+		record->maturity_optimal[i]= ' ';
+	}
+	record->maturity_optimal[MATURITY_OPTIMAL_LENGTH] = '\0';
+
+	for (i=0; i<MATURITY_UPPER_LENGTH; i++)
+	{
+		record->maturity_upper[i]= ' ';
+	}
+	record->maturity_upper[MATURITY_UPPER_LENGTH] = '\0';
+
+	for (i=0; i<KNOTTS_MATURITY_LOWER_LENGTH; i++)
+	{
+		record->knotts_maturity_lower[i]= ' ';
+	}
+	record->knotts_maturity_lower[KNOTTS_MATURITY_LOWER_LENGTH] = '\0';
+
+	for (i=0; i<KNOTTS_UPPER_LENGTH; i++)
+	{
+		record->knotts_upper[i]= ' ';
+	}
+	record->knotts_upper[KNOTTS_UPPER_LENGTH] = '\0';
+
+	for (i=0; i<KNOTTS_FROST_TOLERANCE_LENGTH; i++)
+	{
+		record->knotts_frost_tolerance[i]= ' ';
+	}
+	record->knotts_frost_tolerance[KNOTTS_FROST_TOLERANCE_LENGTH] = '\0';
+
+	for (i=0; i<KNOTTS_TRANSPLANTABLE_LENGTH; i++)
+	{
+		record->knotts_transplantable[i]= ' ';
+	}
+	record->knotts_transplantable[KNOTTS_TRANSPLANTABLE_LENGTH] = '\0';
+
+	for (i=0; i<FLOWERING_LENGTH; i++)
+	{
+		record->flowering[i]= ' ';
+	}
+	record->flowering[FLOWERING_LENGTH] = '\0';
+
+	for (i=0; i<POLLINATION_PRIMARY_LENGTH; i++)
+	{
+		record->pollination_primary[i]= ' ';
+	}
+	record->pollination_primary[POLLINATION_PRIMARY_LENGTH] = '\0';
+
+	for (i=0; i<POLLINATION_SECONDARY_LENGTH; i++)
+	{
+		record->pollination_secondary[i]= ' ';
+	}
+	record->pollination_secondary[POLLINATION_SECONDARY_LENGTH] = '\0';
 
 	return 0;
 }

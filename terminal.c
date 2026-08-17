@@ -11,11 +11,47 @@
  */
 int rtof(struct FIELD fields[], int num_fields, struct RECORD *record)
 {
+	fprintf(stderr, "rtof:\n");
 	strcpy(fields[PLANT_NAME_FIELD].value.c_value, record->plant_name);
 	strcpy(fields[LATIN_NAME_FIELD].value.c_value, record->latin_name);
 	strcpy(fields[HEIGHT_FIELD].value.c_value, record->height);
 	strcpy(fields[WIDTH_FIELD].value.c_value, record->width);
 	strcpy(fields[PLANTING_DEPTH_FIELD].value.c_value, record->planting_depth);
+	strcpy(fields[SEED_SIZE_FIELD].value.c_value, record->seed_size);
+	strcpy(fields[SEED_NEED_LIGHT_FIELD].value.c_value, record->seed_need_light);
+	strcpy(fields[SEED_SCARIFICATION_FIELD].value.c_value, record->seed_scarification);
+	strcpy(fields[PH_FIELD].value.c_value, record->ph);
+	strcpy(fields[EC_FIELD].value.c_value, record->ec);
+	strcpy(fields[DAY_LIGHT_INTERVAL_FIELD].value.c_value, record->day_light_interval);
+	strcpy(fields[PHOTOPERIOD_HOURS_FIELD].value.c_value, record->photoperiod_hours);
+	strcpy(fields[LIGHT_LOWER_FIELD].value.c_value, record->light_lower);
+	strcpy(fields[LIGHT_OPTIMAL_FIELD].value.c_value, record->light_optimal);
+	strcpy(fields[LIGHT_UPPER_FIELD].value.c_value, record->light_upper);
+	strcpy(fields[NITROGEN_LOWER_FIELD].value.c_value, record->nitrogen_lower);
+	strcpy(fields[NITROGEN_OPTIMAL_FIELD].value.c_value, record->nitrogen_optimal);
+	strcpy(fields[NITROGEN_UPPER_FIELD].value.c_value, record->nitrogen_upper);
+	strcpy(fields[PHOSPHORUS_LOWER_FIELD].value.c_value, record->phosphorus_lower);
+	strcpy(fields[PHOSPHORUS_OPTIMAL_FIELD].value.c_value, record->phosphorus_optimal);
+	strcpy(fields[PHOSPHORUS_UPPER_FIELD].value.c_value, record->phosphorus_upper);
+	strcpy(fields[POTASSIUM_LOWER_FIELD].value.c_value, record->potassium_lower);
+	strcpy(fields[POTASSIUM_OPTIMAL_FIELD].value.c_value, record->potassium_optimal);
+	strcpy(fields[POTASSIUM_UPPER_FIELD].value.c_value, record->potassium_upper);
+	strcpy(fields[GERMINATION_LOWER_FIELD].value.c_value, record->germination_lower);
+	strcpy(fields[GERMINATION_NORMAL_FIELD].value.c_value, record->germination_normal);
+	strcpy(fields[GERMINATION_UPPER_FIELD].value.c_value, record->germination_upper);
+	strcpy(fields[TRANSPLANTING_LOWER_FIELD].value.c_value, record->transplanting_lower);
+	strcpy(fields[TRANSPLANTING_OPTIMAL_FIELD].value.c_value, record->transplanting_optimal);
+	strcpy(fields[TRANSPLANTING_UPPER_FIELD].value.c_value, record->transplanting_upper);
+	strcpy(fields[MATURITY_LOWER_FIELD].value.c_value, record->maturity_lower);
+	strcpy(fields[MATURITY_OPTIMAL_FIELD].value.c_value, record->maturity_optimal);
+	strcpy(fields[MATURITY_UPPER_FIELD].value.c_value, record->maturity_upper);
+	strcpy(fields[KNOTTS_MATURITY_LOWER_FIELD].value.c_value, record->knotts_maturity_lower);
+	strcpy(fields[KNOTTS_UPPER_FIELD].value.c_value, record->knotts_upper);
+	strcpy(fields[KNOTTS_FROST_TOLERANCE_FIELD].value.c_value, record->knotts_frost_tolerance);
+	strcpy(fields[KNOTTS_TRANSPLANTABLE_FIELD].value.c_value, record->knotts_transplantable);
+	strcpy(fields[FLOWERING_FIELD].value.c_value, record->flowering);
+	strcpy(fields[POLLINATION_PRIMARY_FIELD].value.c_value, record->pollination_primary);
+	strcpy(fields[POLLINATION_SECONDARY_FIELD].value.c_value, record->pollination_secondary);
 
 	return 0;
 }
@@ -25,11 +61,47 @@ int rtof(struct FIELD fields[], int num_fields, struct RECORD *record)
  */
 int ftor(struct FIELD fields[], int num_fields, struct RECORD *record)
 {
+	fprintf(stderr, "ftor:\n");
 	strcpy(record->plant_name, fields[PLANT_NAME_FIELD].value.c_value);
 	strcpy(record->latin_name, fields[LATIN_NAME_FIELD].value.c_value);
 	strcpy(record->height, fields[HEIGHT_FIELD].value.c_value);
 	strcpy(record->width, fields[WIDTH_FIELD].value.c_value);
 	strcpy(record->planting_depth, fields[PLANTING_DEPTH_FIELD].value.c_value);
+	strcpy(record->seed_size, fields[SEED_SIZE_FIELD].value.c_value);
+	strcpy(record->seed_need_light, fields[SEED_NEED_LIGHT_FIELD].value.c_value);
+	strcpy(record->seed_scarification, fields[SEED_SCARIFICATION_FIELD].value.c_value);
+	strcpy(record->ph, fields[PH_FIELD].value.c_value);
+	strcpy(record->ec, fields[EC_FIELD].value.c_value);
+	strcpy(record->day_light_interval, fields[DAY_LIGHT_INTERVAL_FIELD].value.c_value);
+	strcpy(record->photoperiod_hours, fields[PHOTOPERIOD_HOURS_FIELD].value.c_value);
+	strcpy(record->light_lower, fields[LIGHT_LOWER_FIELD].value.c_value);
+	strcpy(record->light_optimal, fields[LIGHT_OPTIMAL_FIELD].value.c_value);
+	strcpy(record->light_upper, fields[LIGHT_UPPER_FIELD].value.c_value);
+	strcpy(record->nitrogen_lower, fields[NITROGEN_LOWER_FIELD].value.c_value);
+	strcpy(record->nitrogen_optimal, fields[NITROGEN_OPTIMAL_FIELD].value.c_value);
+	strcpy(record->nitrogen_upper, fields[NITROGEN_UPPER_FIELD].value.c_value);
+	strcpy(record->phosphorus_lower, fields[PHOSPHORUS_LOWER_FIELD].value.c_value);
+	strcpy(record->phosphorus_optimal, fields[PHOSPHORUS_OPTIMAL_FIELD].value.c_value);
+	strcpy(record->phosphorus_upper, fields[PHOSPHORUS_UPPER_FIELD].value.c_value);
+	strcpy(record->potassium_lower, fields[POTASSIUM_LOWER_FIELD].value.c_value);
+	strcpy(record->potassium_optimal, fields[POTASSIUM_OPTIMAL_FIELD].value.c_value);
+	strcpy(record->potassium_upper, fields[POTASSIUM_UPPER_FIELD].value.c_value);
+	strcpy(record->germination_lower, fields[GERMINATION_LOWER_FIELD].value.c_value);
+	strcpy(record->germination_normal, fields[GERMINATION_NORMAL_FIELD].value.c_value);
+	strcpy(record->germination_upper, fields[GERMINATION_UPPER_FIELD].value.c_value);
+	strcpy(record->transplanting_lower, fields[TRANSPLANTING_LOWER_FIELD].value.c_value);
+	strcpy(record->transplanting_optimal, fields[TRANSPLANTING_OPTIMAL_FIELD].value.c_value);
+	strcpy(record->transplanting_upper, fields[TRANSPLANTING_UPPER_FIELD].value.c_value);
+	strcpy(record->maturity_lower, fields[MATURITY_LOWER_FIELD].value.c_value);
+	strcpy(record->maturity_optimal, fields[MATURITY_OPTIMAL_FIELD].value.c_value);
+	strcpy(record->maturity_upper, fields[MATURITY_UPPER_FIELD].value.c_value);
+	strcpy(record->knotts_maturity_lower, fields[KNOTTS_MATURITY_LOWER_FIELD].value.c_value);
+	strcpy(record->knotts_upper, fields[KNOTTS_UPPER_FIELD].value.c_value);
+	strcpy(record->knotts_frost_tolerance, fields[KNOTTS_FROST_TOLERANCE_FIELD].value.c_value);
+	strcpy(record->knotts_transplantable, fields[KNOTTS_TRANSPLANTABLE_FIELD].value.c_value);
+	strcpy(record->flowering, fields[FLOWERING_FIELD].value.c_value);
+	strcpy(record->pollination_primary, fields[POLLINATION_PRIMARY_FIELD].value.c_value);
+	strcpy(record->pollination_secondary, fields[POLLINATION_SECONDARY_FIELD].value.c_value);
 
 	return 0;
 }
@@ -39,6 +111,7 @@ int ftor(struct FIELD fields[], int num_fields, struct RECORD *record)
  */
 int xerror(const char *message)
 {
+	fprintf(stderr, "xerror:\n");
 	int i = 0;
 	int l = 75;
 	char *local = malloc(l + 1);
@@ -71,6 +144,7 @@ int xerror(const char *message)
  */
 int paint(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned action)
 {	
+	fprintf(stderr, "paint:\n");
 	struct CURSOR curmax;
 	(void) getmaxyx(stdscr, curmax.y, curmax.x);
 	if (curmax.y < 23 || curmax.x < 79)
@@ -172,8 +246,9 @@ int paint(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned
 
 int terminal()
 {
+	fprintf(stderr, "terminal:\n");
 	unsigned action = INSERT_MODE; // start out in insert mode
-	int num_fields = 5;
+	int num_fields = NUM_FIELDS;
 	int nrecords = 0;
 	struct FIELD fields[num_fields];
 	struct CURSOR cursor = { -1, -1 };
