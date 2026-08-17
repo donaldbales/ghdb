@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include "ghdb.h"
 
+GDBM_FILE gdbm_file = NULL;
+
 /*
  Free singly-linked list
  */
@@ -227,10 +229,11 @@ int find_like(struct RECORD *record)
 /*
  Close
  */
-int ghdb_close(GDBM_FILE gdbm_file)
+int ghdb_close()
 {
-	if (gdbm_close(gdbm_file) == 0)
+	if (gdbm_file != NULL)
 	{
+		gdbm_close(gdbm_file);
 		gdbm_file = NULL;
 	}
 	else
@@ -297,7 +300,7 @@ int ghdb_delete(struct RECORD *record)
 int ghdb_export()
 {
 	int n = 0;
-	ghdb_close(ghdb_open());
+	ghdb_close();
 	pid_t pid = fork(); // Create a new process
 
 	if (pid < 0)
@@ -308,9 +311,9 @@ int ghdb_export()
 	if (pid == 0) 
 	{
 		// Child process
-		fprintf(stderr, "Dumping data to file: ghdb.asc.\n");
+		fprintf(stderr, "Backing up data to file: ghdb.asc.\n");
 		n = execl("/usr/bin/gdbmtool", "/usr/bin/gdbmtool", "ghdb.gdbm", "export", "ghdb.asc", "ascii", (char *)NULL);
-		fprintf(stderr, "Dumping data to file: n=%d.\n", n);
+		fprintf(stderr, "Backing up data to file: n=%d.\n", n);
 		if (n == -1)
 		{
 			fprintf(stderr, "ghdb_export: %s\n", strerror(errno));
@@ -322,7 +325,7 @@ int ghdb_export()
 		// Parent process
 		wait(NULL); // Wait for child to finish
 		fprintf(stderr, "Child process completed.\n");
-		xerror("Database dump to ghdb.asc completed successfully.");
+		xerror("Backup to ghdb.asc completed successfully.");
 	}
 
 	return n;
@@ -330,8 +333,36 @@ int ghdb_export()
 
 int ghdb_import()
 {
+	int n = 0;
+	ghdb_close();
+	pid_t pid = fork(); // Create a new process
 
-	return 0;
+	if (pid < 0)
+	{
+		perror("Fork failed");
+		return 1;
+	}
+	if (pid == 0) 
+	{
+		// Child process
+		fprintf(stderr, "Restoring data from file: ghdb.asc.\n");
+		n = execl("/usr/bin/gdbmtool", "/usr/bin/gdbmtool", "ghdb.gdbm", "import", "ghdb.asc", "replace", (char *)NULL);
+		fprintf(stderr, "Restoring data from file: n=%d.\n", n);
+		if (n == -1)
+		{
+			fprintf(stderr, "ghdb_export: %s\n", strerror(errno));
+		}
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+		// Parent process
+		wait(NULL); // Wait for child to finish
+		fprintf(stderr, "Child process completed.\n");
+		xerror("Restore from ghdb.asc completed successfully.");
+	}
+
+	return n;
 }
 
 /*
@@ -408,7 +439,6 @@ int ghdb_insert(struct RECORD *record)
  */
 void *ghdb_open()
 {
-	GDBM_FILE gdbm_file = NULL;
 	char* gdbm_file_filename = "ghdb.gdbm"; 
 
 	if (gdbm_file == NULL)

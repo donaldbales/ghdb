@@ -327,7 +327,7 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 					fprintf(stderr, "KEY_F(16): %s: %s\n", fields[i].label.l_value, fields[i].value.c_value);
 				}
 				*/
-				(void) ghdb_close(ghdb_open());
+				(void) ghdb_close();
 				(void) endwin();
 				exit(0);
 				break;
@@ -343,6 +343,7 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 			case KEY_F(19):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(19)");
 				// import dump
+				ghdb_import();
 				break;
 
 			case KEY_F(20):

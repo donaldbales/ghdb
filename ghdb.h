@@ -95,7 +95,7 @@ struct RECORD
 int fldlen(const int y, const int x, const int l);
 int formscrn(struct FIELD fields[], int num_fields);
 int ftor(struct FIELD fields[], int num_fields, struct RECORD *record);
-int ghdb_close(GDBM_FILE gdbm_file);
+int ghdb_close();
 int ghdb_delete(struct RECORD *record);
 int ghdb_export();
 int ghdb_import();
