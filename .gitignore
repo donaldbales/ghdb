@@ -55,9 +55,11 @@ dkms.conf
 *.dwo
 
 # Misc
-ghdb
+*.asc
 *.err
-*.gbm
+*.gdbm
 *.log
-trace
+*.tsv
+ghdb
 ncurses4.*
+trace

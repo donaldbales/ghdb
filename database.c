@@ -7,7 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <time.h>
+#include <unistd.h>
 #include "ghdb.h"
 
 /*
@@ -294,8 +296,36 @@ int ghdb_delete(struct RECORD *record)
 
 int ghdb_export()
 {
+	int n = 0;
+	ghdb_close(ghdb_open());
+	pid_t pid = fork(); // Create a new process
 
-	return 0;
+	if (pid < 0)
+	{
+		perror("Fork failed");
+		return 1;
+	}
+	if (pid == 0) 
+	{
+		// Child process
+		fprintf(stderr, "Dumping data to file: ghdb.asc.\n");
+		n = execl("/usr/bin/gdbmtool", "/usr/bin/gdbmtool", "ghdb.gdbm", "export", "ghdb.asc", "ascii", (char *)NULL);
+		fprintf(stderr, "Dumping data to file: n=%d.\n", n);
+		if (n == -1)
+		{
+			fprintf(stderr, "ghdb_export: %s\n", strerror(errno));
+		}
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+		// Parent process
+		wait(NULL); // Wait for child to finish
+		fprintf(stderr, "Child process completed.\n");
+		xerror("Database dump to ghdb.asc completed successfully.");
+	}
+
+	return n;
 }
 
 int ghdb_import()
@@ -378,8 +408,8 @@ int ghdb_insert(struct RECORD *record)
  */
 void *ghdb_open()
 {
-	static GDBM_FILE gdbm_file = NULL;
-	char* gdbm_file_filename = "ghdb.gbm"; 
+	GDBM_FILE gdbm_file = NULL;
+	char* gdbm_file_filename = "ghdb.gdbm"; 
 
 	if (gdbm_file == NULL)
 	{

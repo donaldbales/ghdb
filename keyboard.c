@@ -342,10 +342,13 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 
 			case KEY_F(19):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(19)");
+				// import dump
 				break;
 
 			case KEY_F(20):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(20)");
+				//export dump
+				ghdb_export();
 				break;
 
 			case KEY_F(21):
