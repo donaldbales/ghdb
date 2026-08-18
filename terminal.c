@@ -11,7 +11,7 @@
  */
 int rtof(struct FIELD fields[], int num_fields, struct RECORD *record)
 {
-	fprintf(stderr, "rtof:\n");
+//	fprintf(stderr, "rtof:\n");
 	strcpy(fields[PLANT_NAME_FIELD].value.c_value, record->plant_name);
 	strcpy(fields[LATIN_NAME_FIELD].value.c_value, record->latin_name);
 	strcpy(fields[HEIGHT_FIELD].value.c_value, record->height);
@@ -58,7 +58,7 @@ int rtof(struct FIELD fields[], int num_fields, struct RECORD *record)
  */
 int ftor(struct FIELD fields[], int num_fields, struct RECORD *record)
 {
-	fprintf(stderr, "ftor:\n");
+//	fprintf(stderr, "ftor:\n");
 	strcpy(record->plant_name, fields[PLANT_NAME_FIELD].value.c_value);
 	strcpy(record->latin_name, fields[LATIN_NAME_FIELD].value.c_value);
 	strcpy(record->height, fields[HEIGHT_FIELD].value.c_value);
@@ -105,7 +105,7 @@ int ftor(struct FIELD fields[], int num_fields, struct RECORD *record)
  */
 int xerror(const char *message)
 {
-	fprintf(stderr, "xerror:\n");
+//	fprintf(stderr, "xerror:\n");
 	int i = 0;
 	int l = 75;
 	char *local = malloc(l + 1);
@@ -138,7 +138,7 @@ int xerror(const char *message)
  */
 int paint(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned action)
 {	
-	fprintf(stderr, "paint:\n");
+//	fprintf(stderr, "paint:\n");
 	struct CURSOR curmax;
 	(void) getmaxyx(stdscr, curmax.y, curmax.x);
 	if (curmax.y < 23 || curmax.x < 79)
@@ -240,7 +240,7 @@ int paint(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned
 
 int terminal()
 {
-	fprintf(stderr, "terminal:\n");
+//	fprintf(stderr, "terminal:\n");
 	unsigned action = INSERT_MODE; // start out in insert mode
 	int num_fields = NUM_FIELDS;
 	int nrecords = 0;
@@ -263,14 +263,14 @@ int terminal()
 		switch (action)
 		{
 			case (SELECT_MODE | FIND_RECORD):
-				fprintf(stderr, "SELECT_MODE | FIND_RECORD\n");
+//				fprintf(stderr, "SELECT_MODE | FIND_RECORD\n");
 				(void) init_record(&record);
 				(void) rtof(fields, num_fields, &record);
 				(void) paint(fields, num_fields, &cursor, action);
 				xerror("Press (ENTER) to execute query.");
 				break;
 			case (SELECT_MODE | ENTER):
-				fprintf(stderr, "SELECT_MODE | ENTER\n");
+//				fprintf(stderr, "SELECT_MODE | ENTER\n");
 				(void) ftor(fields, num_fields, &record);
 				nrecords = ghdb_select(&record);
 				(void) rtof(fields, num_fields, &record);
@@ -285,7 +285,7 @@ int terminal()
 				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (SELECT_MODE | FIRST_RECORD):
-				fprintf(stderr, "SELECT_MODE | FIRST_RECORD\n");
+//				fprintf(stderr, "SELECT_MODE | FIRST_RECORD\n");
 				(void) init_record(&record);
 				(void) rtof(fields, num_fields, &record);
 				(void) ghdb_select_first(&record);
@@ -294,35 +294,35 @@ int terminal()
 				//xerror("Press (ENTER) to update.");
 				break;
 			case (SELECT_MODE | NEXT_RECORD):
-				fprintf(stderr, "SELECT_MODE | NEXT_RECORD\n");
+//				fprintf(stderr, "SELECT_MODE | NEXT_RECORD\n");
 				(void) ghdb_select_next(&record);
 				(void) rtof(fields, num_fields, &record);
 				(void) paint(fields, num_fields, &cursor, action);
 				//xerror("Press (ENTER) to update.");
 				break;
 			case (SELECT_MODE | PREVIOUS_RECORD):
-				fprintf(stderr, "SELECT_MODE | PREVIOUS_RECORD\n");
+//				fprintf(stderr, "SELECT_MODE | PREVIOUS_RECORD\n");
 				(void) ghdb_select_previous(&record);
 				(void) rtof(fields, num_fields, &record);
 				(void) paint(fields, num_fields, &cursor, action);
 				//xerror("Press (ENTER) to update.");
 				break;
 			case (SELECT_MODE | UPDATE_RECORD):
-				fprintf(stderr, "SELECT_MODE | UPDATE_RECORD\n");
+//				fprintf(stderr, "SELECT_MODE | UPDATE_RECORD\n");
 				(void) ftor(fields, num_fields, &record);
 				(void) ghdb_update(&record);
 				action = (SELECT_MODE | FIRST_RECORD);
 				(void) paint(fields, num_fields, &cursor, action);
 				break;
 			case (INSERT_MODE):
-				fprintf(stderr, "INSERT_MODE\n");
+//				fprintf(stderr, "INSERT_MODE\n");
 				(void) init_record(&record);
 				(void) rtof(fields, num_fields, &record);
 				(void) paint(fields, num_fields, &cursor, action);
 				xerror("Press (ENTER) to insert record.");
 				break;
 			case (INSERT_MODE | ENTER):
-				fprintf(stderr, "SELECT_MODE | ENTER\n");
+//				fprintf(stderr, "SELECT_MODE | ENTER\n");
 				(void) ftor(fields, num_fields, &record);
 				(void) ghdb_insert(&record);
 				(void) init_record(&record);
@@ -330,21 +330,11 @@ int terminal()
 				action = INSERT_MODE;
 				(void) paint(fields, num_fields, &cursor, action);
 				break;
-			case (UPDATE_MODE):
-				fprintf(stderr, "UPDATE_MODE\n");
-				xerror("ERROR: UPDATE_MODE, DOES NOT EXIST.");
-				break;
-			case (UPDATE_MODE | ENTER):
-				fprintf(stderr, "UPDATE_MODE | ENTER\n");
-				xerror("ERROR: UPDATE_MODE | ENTER, DOES NOT EXIST.");
-				break;
 			case (DELETE_MODE):
-				xerror("DELETED_MODE");
 				(void) paint(fields, num_fields, &cursor, action);
 				xerror("Press (ENTER) to confirm delete.");
 				break;
 			case (DELETE_MODE | ENTER):
-				xerror("DELETE_MODE | ENTER");
 				(void) ghdb_delete(&record);
 				(void) init_record(&record);
 				(void) rtof(fields, num_fields, &record);
@@ -374,7 +364,7 @@ int terminal()
 
 		(void) refresh();
 		action = keyboard(fields, num_fields, &cursor, action);
-		fprintf(stderr, "action=%d\n", action);
+//		fprintf(stderr, "action=%d\n", action);
 	} while (action > 0);
 
 	return 0;

@@ -4,7 +4,7 @@
 #
 
 ghdb : ghdb.o terminal.o keyboard.o keymouse.o database.o formscrn.o
-	gcc ghdb.o terminal.o keyboard.o keymouse.o database.o formscrn.o -l ncursesw_g -lgdbm -o ghdb
+	gcc ghdb.o terminal.o keyboard.o keymouse.o database.o formscrn.o -l ncurses -lgdbm -o ghdb
 
 formscrn.o : ghdb.h formscrn.c
 	gcc formscrn.c -c -g -Wall

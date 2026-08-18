@@ -5,7 +5,7 @@
 #include <string.h>
 #include "ghdb.h"
 
-int keymouse(struct FIELD fields[], int num_fields)
+int keymouse(struct FIELD fields[], int num_fields, struct CURSOR *cursor)
 {
 	int button_alt = 0;
 	int button_ctrl = 0;
@@ -50,6 +50,30 @@ int keymouse(struct FIELD fields[], int num_fields)
 		}
 		else
 		{
+			for (int i=0; i<num_fields; i++)
+			{
+				if (cursor->y == fields[i].value.y &&
+					cursor->x >= fields[i].value.x && 
+					cursor->x <= fields[i].value.x + fields[i].value.l)
+				{
+					char *p = getfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
+					strcpy(fields[i].value.c_value, p);
+					free(p);
+					fprintf(stderr, "BUTTON1_CLICKED: %s\n", fields[i].value.c_value);
+					if (i<num_fields - 1)
+					{
+						(void) move(fields[i + 1].value.y, fields[i + 1].value.x + \
+							 fldlen(fields[i + 1].value.y, fields[i + 1].value.x, fields[i + 1].value.l));
+					}
+					else
+					{
+						(void) move(fields[0].value.y, fields[0].value.x + \
+							 fldlen(fields[0].value.y, fields[0].value.x, fields[0].value.l));
+					}
+					break;
+				}
+			}
+
 			for (int i=0; i<num_fields; i++)
 			{
 				if (mevent.y == fields[i].value.y &&

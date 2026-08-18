@@ -56,14 +56,14 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 	for (;;)
 	{
 		int ch = getch();
-		fprintf(stderr, "keyboard: %d (%c)\n", ch, ch);
+//		fprintf(stderr, "keyboard: %d (%c)\n", ch, ch);
 		(void) getyx(stdscr, cursor->y, cursor->x);
-		fprintf(stderr, "keyboard: y=%d x=%d\n", cursor->y, cursor->x);
+//		fprintf(stderr, "keyboard: y=%d x=%d\n", cursor->y, cursor->x);
 
 		switch(ch)
 		{
 			case 9:
-				fprintf(stderr, "keyboard: %s\n", "TAB");
+//				fprintf(stderr, "keyboard: %s\n", "TAB");
 				for (int i=0; i<num_fields; i++)
 				{
 					if (cursor->y == fields[i].value.y &&
@@ -97,7 +97,7 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 				break;
 
 			case 13: // aka ENTER
-				fprintf(stderr, "keyboard: %s\n", "RETURN");
+//				fprintf(stderr, "keyboard: %s\n", "RETURN");
 				for (int i=0; i<num_fields; i++)
 				{
 					if (cursor->y == fields[i].value.y &&
@@ -107,37 +107,37 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 						char *p = getfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
 						strcpy(fields[i].value.c_value, p);
 						free(p);
-						fprintf(stderr, "RETURN: %s\n", fields[i].value.c_value);
+//						fprintf(stderr, "RETURN: %s\n", fields[i].value.c_value);
 					}
 				}
 				switch (action)
 				{
 					case (INSERT_MODE):
-						fprintf(stderr, "RETURN: (INSERT_MODE)\n");
+//						fprintf(stderr, "RETURN: (INSERT_MODE)\n");
 						return (INSERT_MODE | ENTER);
 						break;
 					case (DELETE_MODE):
-						fprintf(stderr, "RETURN: (DELETE_MODE)\n");
+//						fprintf(stderr, "RETURN: (DELETE_MODE)\n");
 						return (DELETE_MODE | ENTER);
 						break;
 					case (SELECT_MODE | FIND_RECORD):
-						fprintf(stderr, "RETURN: (SELECT_MODE | FIND_RECORD)\n");
+//						fprintf(stderr, "RETURN: (SELECT_MODE | FIND_RECORD)\n");
 						return (SELECT_MODE | ENTER);
 						break;
 					case (SELECT_MODE | FIRST_RECORD):
-						fprintf(stderr, "RETURN: (SELECT_MODE | FIRST_RECORD)\n");
+//						fprintf(stderr, "RETURN: (SELECT_MODE | FIRST_RECORD)\n");
 						return (SELECT_MODE | UPDATE_RECORD); // pressing ENTER in SELECT_MODE must mean UPDATE
 						break;
 					case (SELECT_MODE | NEXT_RECORD):
-						fprintf(stderr, "RETURN: (SELECT_MODE | NEXT_RECORD)\n");
+//						fprintf(stderr, "RETURN: (SELECT_MODE | NEXT_RECORD)\n");
 						return (SELECT_MODE | UPDATE_RECORD); // pressing ENTER in SELECT_MODE must mean UPDATE
 						break;
 					case (SELECT_MODE | PREVIOUS_RECORD):
-						fprintf(stderr, "RETURN: (SELECT_MODE | PREVIOUS_RECORD)\n");
+//						fprintf(stderr, "RETURN: (SELECT_MODE | PREVIOUS_RECORD)\n");
 						return (SELECT_MODE | UPDATE_RECORD); // pressing ENTER in SELECT_MODE must mean UPDATE
 						break;
 					case (UPDATE_MODE):
-						fprintf(stderr, "RETURN: (UPDATE_MODE)\n");
+//						fprintf(stderr, "RETURN: (UPDATE_MODE)\n");
 						return (UPDATE_MODE | ENTER);
 						break;
 				}
@@ -172,7 +172,7 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 				break;
 	
 			case KEY_LEFT:
-				fprintf(stderr, "keyboard: %s\n", "KEY_LEFT");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_LEFT");
 				for (int i=0; i<num_fields; i++)
 				{
 					if (cursor->y == fields[i].value.y &&
@@ -188,7 +188,7 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 				break;
 	
 			case KEY_RIGHT:
-				fprintf(stderr, "keyboard: %s\n", "KEY_RIGHT");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_RIGHT");
 				for (int i=0; i<num_fields; i++)
 				{
 					if (cursor->y == fields[i].value.y &&
@@ -208,7 +208,7 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 				break;
 	
 			case KEY_BACKSPACE:
-				fprintf(stderr, "keyboard: %s\n", "KEY_BACKSPACE");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_BACKSPACE");
 				for (int i=0; i<num_fields; i++)
 				{
 					if (cursor->y == fields[i].value.y &&
@@ -233,23 +233,23 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 				fprintf(stderr, "keyboard: %s\n", "KEY_F0");
 				break;
 	
-			case KEY_F(1):
+//			case KEY_F(1):
 				fprintf(stderr, "keyboard: %s\n", "KEY_F(1)");
 				return (INSERT_MODE);
 				break;
 	
 			case KEY_F(2):
-				fprintf(stderr, "keyboard: %s\n", "KEY_F(2)");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_F(2)");
 				return (SELECT_MODE | FIRST_RECORD);
 				break;
 	
 			case KEY_F(3):
-				fprintf(stderr, "keyboard: %s\n", "KEY_F(3)");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_F(3)");
 				return (SELECT_MODE | FIND_RECORD);
 				break;
 	
 			case KEY_F(4):
-				fprintf(stderr, "keyboard: %s\n", "KEY_F(4)");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_F(4)");
 				if (action & SELECT_MODE)
 				{
 					return (SELECT_MODE | PREVIOUS_RECORD);	
@@ -257,7 +257,7 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 				break;
 	
 			case KEY_F(5):
-				fprintf(stderr, "keyboard: %s\n", "KEY_F(5)");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_F(5)");
 				if (action & SELECT_MODE)
 				{
 					return (SELECT_MODE | NEXT_RECORD);
@@ -265,17 +265,17 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 				break;
 	
 			case KEY_F(6):
-				fprintf(stderr, "keyboard: %s\n", "KEY_F(6)");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_F(6)");
 				return (DELETE_MODE);
 				break;
 	
 			case KEY_F(7):
-				fprintf(stderr, "keyboard: %s\n", "KEY_F(7)");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_F(7)");
 				return (IMPORT_MODE);
 				break;
 	
 			case KEY_F(8):
-				fprintf(stderr, "keyboard: %s\n", "KEY_F(8)");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_F(8)");
 				return (EXPORT_MODE);
 				break;
 	
@@ -308,26 +308,7 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 				break;
 	
 			case KEY_F(16):
-				fprintf(stderr, "keyboard: %s\n", "KEY_F(16)");
-				fprintf(stderr, "KEY_F(16)\n");
-				/*
-				for (int i=0; i<num_fields; i++)
-				{
-					if (cursor->y == fields[i].value.y &&
-						cursor->x >= fields[i].value.x && 
-						cursor->x <= fields[i].value.x + fields[i].value.l)
-					{
-						char *p = getfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
-						strcpy(fields[i].value.c_value, p);
-						free(p);
-						fprintf(stderr, "KEY_F(16): %s\n", fields[i].value.c_value);
-					}
-				}
-				for (int i=0; i<num_fields; i++)
-				{
-					fprintf(stderr, "KEY_F(16): %s: %s\n", fields[i].label.l_value, fields[i].value.c_value);
-				}
-				*/
+//				fprintf(stderr, "keyboard: %s\n", "KEY_F(16)");
 				(void) ghdb_close();
 				(void) endwin();
 				exit(0);
@@ -462,7 +443,7 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 				break;
 	
 			case KEY_BTAB:
-				fprintf(stderr, "keyboard: %s\n", "KEY_BTAB");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_BTAB");
 				for (int i=0; i<num_fields; i++)
 				{
 					if (cursor->y == fields[i].value.y &&
@@ -472,7 +453,7 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 						char *p = getfld(fields[i].value.y, fields[i].value.x, fields[i].value.l);
 						strcpy(fields[i].value.c_value, p);
 						free(p);
-						fprintf(stderr, "KEY_BTAB: %s\n", fields[i].value.c_value);
+//						fprintf(stderr, "KEY_BTAB: %s\n", fields[i].value.c_value);
 						if (i>0)
 						{
 							(void) move(fields[i - 1].value.y, \
@@ -717,12 +698,12 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 				break;
 	
 			case KEY_MOUSE:
-				fprintf(stderr, "keyboard: %s\n", "KEY_MOUSE");
-				(void) keymouse(fields, num_fields);
+//				fprintf(stderr, "keyboard: %s\n", "KEY_MOUSE");
+				(void) keymouse(fields, num_fields, cursor);
 				break;
 	
 			case KEY_RESIZE:
-				fprintf(stderr, "keyboard: %s\n", "KEY_RESIZE");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_RESIZE");
 				(void) clear();
 				(void) paint(fields, num_fields, cursor, action);
 				break;

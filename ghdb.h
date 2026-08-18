@@ -153,6 +153,7 @@ struct RECORD
 	char pollination_primary[POLLINATION_PRIMARY_LENGTH + 1];
 	char pollination_secondary[POLLINATION_SECONDARY_LENGTH + 1];
 };
+
 #define NUM_FIELDS 37
 
 #define ADD_RECORD      0x00000001 // PF1
@@ -202,7 +203,7 @@ int ghdb_select_next(struct RECORD *record);
 int ghdb_select_previous(struct RECORD *record);
 int ghdb_update(struct RECORD *record);
 int init_record(struct RECORD *record);
-int keymouse(struct FIELD fields[], int num_fields);
+int keymouse(struct FIELD fields[], int num_fields, struct CURSOR *cursor);
 int paint(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned action);
 int rtof(struct FIELD fields[], int num_fields, struct RECORD *record);
 int terminal();
@@ -211,5 +212,6 @@ int tsv_import();
 int xerror(const char *message);
 unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, unsigned action);
 void *ghdb_open();
+char *getfld(const int y, const int x, const int l);
 
 #endif

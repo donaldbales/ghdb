@@ -82,7 +82,7 @@ int like(char *re, char *str, int *patterns, int *matches)
 		n = regcomp(&compiled, pattern, REG_EXTENDED | REG_ICASE | REG_NEWLINE);
 		if (n == 0)
 		{
-			fprintf(stderr, "pattern compiled successfully\n");
+//			fprintf(stderr, "pattern compiled successfully\n");
 		}
 		else
 		{
@@ -104,11 +104,11 @@ int like(char *re, char *str, int *patterns, int *matches)
 			if (n == 0)
 			{
 				(*matches)++;
-				fprintf(stderr, "it matches\n");
+//				fprintf(stderr, "it matches\n");
 			}
 			else if (n == REG_NOMATCH)
 			{
-				fprintf(stderr, "no match\n");
+//				fprintf(stderr, "no match\n");
 			}
 			else
 			{
@@ -143,7 +143,7 @@ int find_like(struct RECORD *record)
 	struct KEY_LIST *local_key = NULL;
 	GDBM_FILE gdbm_file = ghdb_open();
 
-	fprintf(stderr, "find_like(): build key list.\n");
+//	fprintf(stderr, "find_like(): build key list.\n");
 	local_record = malloc(sizeof(struct RECORD));
 	init_record(local_record);
 	ghdb_key = NULL;
@@ -156,14 +156,14 @@ int find_like(struct RECORD *record)
 		xerror("Searching...");
 		do
 		{
-			fprintf(stderr, "find_like(): get a record from the database.\n");
+//			fprintf(stderr, "find_like(): get a record from the database.\n");
 			local_record = malloc(sizeof(struct RECORD));
 			init_record(local_record);
-			fprintf(stderr, "find_like():ghdb_key='%p'\n", p);
+//			fprintf(stderr, "find_like():ghdb_key='%p'\n", p);
 			key.dptr = ((struct KEY_LIST *)p)->key;
 			key.dsize = PLANT_NAME_LENGTH;
-			fprintf(stderr, "find_like(): key.dptr='%s'\n", key.dptr);
-			fprintf(stderr, "find_like(): key.dsize='%d'\n", key.dsize);
+//			fprintf(stderr, "find_like(): key.dptr='%s'\n", key.dptr);
+//			fprintf(stderr, "find_like(): key.dsize='%d'\n", key.dsize);
 			content = gdbm_fetch(gdbm_file, key);
 			if (content.dptr != NULL)
 			{
@@ -172,7 +172,7 @@ int find_like(struct RECORD *record)
 			}
 			else if (gdbm_errno == GDBM_ITEM_NOT_FOUND)
 			{
-				fprintf(stderr, "find_like(): record not found.\n");
+//				fprintf(stderr, "find_like(): record not found.\n");
 				xerror("Record not found.");
 			}
 			else
@@ -180,19 +180,19 @@ int find_like(struct RECORD *record)
 				xerror(gdbm_db_strerror(gdbm_file));
 			}
 
-			fprintf(stderr, "find_like(): create the re.\n");
+//			fprintf(stderr, "find_like(): create the re.\n");
 			re = malloc(strlen(record->plant_name) + 1);
 			strcpy(re, record->plant_name);
 			if (strlen(trim(re)) > 0)
 			{
 				patterns = 0;
 				matches = 0;
-				fprintf(stderr, "find_like(): create the str.\n");
+//				fprintf(stderr, "find_like(): create the str.\n");
 				str = malloc(strlen(local_record->plant_name) + 1);
 				strcpy(str, local_record->plant_name);
-				fprintf(stderr, "find_like(): Before like.\n");
+//				fprintf(stderr, "find_like(): Before like.\n");
 				like(re, str, &patterns, &matches);
-				fprintf(stderr, "find_like(): After like, patterns=%d, matches=%d.\n\n", patterns, matches);
+//				fprintf(stderr, "find_like(): After like, patterns=%d, matches=%d.\n\n", patterns, matches);
 				free(str);
 			}
 			free(local_record);
@@ -201,7 +201,7 @@ int find_like(struct RECORD *record)
 
 			if (patterns == matches)
 			{
-				fprintf(stderr, "find_like(): Found a record: '%s'\n", p->key);
+//				fprintf(stderr, "find_like(): Found a record: '%s'\n", p->key);
 				local_key = malloc(sizeof(struct KEY_LIST));
 				if (first == NULL)
 				{
@@ -217,7 +217,7 @@ int find_like(struct RECORD *record)
 				prev = local_key;
 			}
 			p = p->next;
-			fprintf(stderr, "find_like(): the next key is %p\n", p);
+//			fprintf(stderr, "find_like(): the next key is %p\n", p);
 		}
 		while (p != NULL);
 	}
@@ -272,12 +272,13 @@ int ghdb_delete(struct RECORD *record)
 	strncpy(pk, record->plant_name, PLANT_NAME_LENGTH);
 
 	key.dsize = PLANT_NAME_LENGTH;
-	// I think you can recode this to use record->plant_name!
-	key.dptr = record->plant_name;
+	key.dptr = ((void *)pk);
 	pk = NULL;
 
 	retcode = gdbm_delete(gdbm_file, key);
+
 	free(pk);
+
 	if (retcode == 0)
 	{
 		xerror("Record deleted.");
@@ -310,9 +311,9 @@ int ghdb_export()
 	if (pid == 0) 
 	{
 		// Child process
-		fprintf(stderr, "Backing up data to file: ghdb.asc.\n");
+//		fprintf(stderr, "Backing up data to file: ghdb.asc.\n");
 		n = execl("/usr/bin/gdbmtool", "/usr/bin/gdbmtool", "ghdb.gdbm", "export", "ghdb.asc", "ascii", (char *)NULL);
-		fprintf(stderr, "Backing up data to file: n=%d.\n", n);
+//		fprintf(stderr, "Backing up data to file: n=%d.\n", n);
 		if (n == -1)
 		{
 			fprintf(stderr, "ghdb_export: %s\n", strerror(errno));
@@ -324,7 +325,7 @@ int ghdb_export()
 	{
 		// Parent process
 		wait(NULL); // Wait for child to finish
-		fprintf(stderr, "Child process completed.\n");
+//		fprintf(stderr, "Child process completed.\n");
 		xerror("Backup to ghdb.asc completed successfully.");
 	}
 
@@ -345,9 +346,9 @@ int ghdb_import()
 	if (pid == 0) 
 	{
 		// Child process
-		fprintf(stderr, "Restoring data from file: ghdb.asc.\n");
+//		fprintf(stderr, "Restoring data from file: ghdb.asc.\n");
 		n = execl("/usr/bin/gdbmtool", "/usr/bin/gdbmtool", "ghdb.gdbm", "import", "ghdb.asc", "replace", (char *)NULL);
-		fprintf(stderr, "Restoring data from file: n=%d.\n", n);
+//		fprintf(stderr, "Restoring data from file: n=%d.\n", n);
 		if (n == -1)
 		{
 			fprintf(stderr, "ghdb_export: %s\n", strerror(errno));
@@ -359,20 +360,13 @@ int ghdb_import()
 	{
 		// Parent process
 		wait(NULL); // Wait for child to finish
-		fprintf(stderr, "Child process completed.\n");
+//		fprintf(stderr, "Child process completed.\n");
 		xerror("Restore from ghdb.asc completed successfully.");
 	}
 
 	return n;
 }
 
-/*
-	typedef struct
-	{
-		char *dptr;
-		int dsize;
-	} datum;
- */
 int ghdb_insert(struct RECORD *record)
 {
 	GDBM_FILE gdbm_file = ghdb_open();
@@ -410,15 +404,16 @@ int ghdb_insert(struct RECORD *record)
 	strncpy(pk, record->plant_name, PLANT_NAME_LENGTH);
 
 	key.dsize = PLANT_NAME_LENGTH;
-	// I think you can recode this to use record->plant_name
-	key.dptr = (((void *)pk));
+	key.dptr = ((void *)pk);
 	pk = NULL;
 
 	content.dsize = sizeof(struct RECORD);
 	content.dptr = (((void *)record));
 
 	retcode = gdbm_store(gdbm_file, key, content, GDBM_INSERT);
+
 	free(pk);
+
 	if (retcode == 0)
 	{
 		xerror("Record inserted.");
@@ -470,25 +465,25 @@ int ghdb_select(struct RECORD *record)
 	char string[75];
 	struct KEY_LIST *p;
 
-	fprintf(stderr, "Before find_like(record)\n");
+//	fprintf(stderr, "Before find_like(record)\n");
 	find_like(record);
-	fprintf(stderr, "After find_like(record), ghdb_key=%p\n", ghdb_key);
+//	fprintf(stderr, "After find_like(record), ghdb_key=%p\n", ghdb_key);
 
 	if (ghdb_key != NULL)
 	{
 		p = ghdb_key;
-		fprintf(stderr, "p=%p\n", p);
+//		fprintf(stderr, "p=%p\n", p);
 		while (p != NULL)
 		{
 			nrecords++;
-			fprintf(stderr, "p->next=%p\n", p->next);
+//			fprintf(stderr, "p->next=%p\n", p->next);
 			p = p->next;
 		};
 
-		fprintf(stderr, "After find_like(record), ghdb_key=%p, nrecords=%d\n", ghdb_key, nrecords);
+//		fprintf(stderr, "After find_like(record), ghdb_key=%p, nrecords=%d\n", ghdb_key, nrecords);
 
 		key.dptr = ghdb_key->key;
-		fprintf(stderr, "ghdb_select(): key.dptr='%s'\n", key.dptr);
+//		fprintf(stderr, "ghdb_select(): key.dptr='%s'\n", key.dptr);
 		key.dsize = PLANT_NAME_LENGTH;
 		content = gdbm_fetch(gdbm_file, key);
 		if (content.dptr != NULL)
@@ -512,7 +507,7 @@ int ghdb_select(struct RECORD *record)
 		xerror("Record not found.");
 	}	
 
-	fprintf(stderr, "Returning from ghdb_select()\n");
+//	fprintf(stderr, "Returning from ghdb_select()\n");
 
 	return nrecords;
 }
@@ -727,15 +722,16 @@ int ghdb_update(struct RECORD *record)
 	strncpy(pk, record->plant_name, PLANT_NAME_LENGTH);
 
 	key.dsize = PLANT_NAME_LENGTH;
-	// I think you can recode this to use record->plant_name
-	key.dptr = (((void *)pk));
+	key.dptr = ((void *)pk);
 	pk = NULL;
 
 	content.dsize = sizeof(struct RECORD);
 	content.dptr = (((void *)record));
 
 	retcode = gdbm_store(gdbm_file, key, content, GDBM_REPLACE);
+
 	free(pk);
+
 	if (retcode == 0)
 	{
 		xerror("Record updated.");
@@ -1137,7 +1133,6 @@ int tsv_import()
 	char pollination_secondary[100];
 	
 	int n = 0;
-//	size_t size = 0;
 	struct RECORD record;
 
 	errno = 0;
@@ -1148,7 +1143,7 @@ int tsv_import()
 		(void) endwin();
 		exit (EXIT_FAILURE);
 	}
-//	while ((n = getline(line, &size, file)) != -1)
+
 	while (fgets(line, sizeof(line), file) != NULL)
 	{
 		plant_name[0] = '\0';
@@ -1188,7 +1183,7 @@ int tsv_import()
 		flowering[0] = '\0';
 		pollination_primary[0] = '\0';
 		pollination_secondary[0] = '\0';
-		fprintf(stderr, "tsv_import: getline=%d\n", n);
+//		fprintf(stderr, "tsv_import: getline=%d\n", n);
 //						   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5   6   7   
 		n = sscanf(line, "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 				plant_name,
@@ -1228,6 +1223,7 @@ int tsv_import()
 				flowering,
 				pollination_primary,
 				pollination_secondary);
+/*
 		fprintf(stderr, "tsv_import: sscanf=%d\n", n);
 		fprintf(stderr, "tsv_import: plant_name=%s\n", plant_name);
 		fprintf(stderr, "tsv_import: latin_name=%s\n", latin_name);
@@ -1266,59 +1262,53 @@ int tsv_import()
 		fprintf(stderr, "flowering=%s\n", flowering);
 		fprintf(stderr, "pollination_primary=%s\n", pollination_primary);
 		fprintf(stderr, "pollination_secondary=%s\n", pollination_secondary);
-		/*
-		if (n == NUM_FIELDS)
+*/
+		n = strcmp("PLANT_NAME", plant_name);
+//		fprintf(stderr, "tsv_import: strcmp=%d\n", n);
+		if (n != 0)
 		{
-			*/
-			n = strcmp("PLANT_NAME", plant_name);
-			fprintf(stderr, "tsv_import: strcmp=%d\n", n);
-			if (n != 0)
-			{
-				(void) init_record(&record);
-				memcpy(record.plant_name, plant_name, strlen(plant_name));
-				memcpy(record.latin_name, latin_name, strlen(latin_name));
-				memcpy(record.height, height, strlen(height));
-				memcpy(record.width, width, strlen(width));
-				memcpy(record.planting_depth, planting_depth, strlen(planting_depth));
-				memcpy(record.seed_size, seed_size, strlen(seed_size));
-				memcpy(record.seed_need_light, seed_need_light, strlen(seed_need_light));
-				memcpy(record.seed_scarification, seed_scarification, strlen(seed_scarification));
-				memcpy(record.ph, ph, strlen(ph));
-				memcpy(record.ec, ec, strlen(ec));
-				memcpy(record.day_light_interval, day_light_interval, strlen(day_light_interval));
-				memcpy(record.photoperiod_hours, photoperiod_hours, strlen(photoperiod_hours));
-				memcpy(record.light_lower, light_lower, strlen(light_lower));
-				memcpy(record.light_optimal, light_optimal, strlen(light_optimal));
-				memcpy(record.light_upper, light_upper, strlen(light_upper));
-				memcpy(record.nitrogen_lower, nitrogen_lower, strlen(nitrogen_lower));
-				memcpy(record.nitrogen_optimal, nitrogen_optimal, strlen(nitrogen_optimal));
-				memcpy(record.nitrogen_upper, nitrogen_upper, strlen(nitrogen_upper));
-				memcpy(record.phosphorus_lower, phosphorus_lower, strlen(phosphorus_lower));
-				memcpy(record.phosphorus_optimal, phosphorus_optimal, strlen(phosphorus_optimal));
-				memcpy(record.phosphorus_upper, phosphorus_upper, strlen(phosphorus_upper));
-				memcpy(record.potassium_lower, potassium_lower, strlen(potassium_lower));
-				memcpy(record.potassium_optimal, potassium_optimal, strlen(potassium_optimal));
-				memcpy(record.potassium_upper, potassium_upper, strlen(potassium_upper));
-				memcpy(record.germination_lower, germination_lower, strlen(germination_lower));
-				memcpy(record.germination_normal, germination_normal, strlen(germination_normal));
-				memcpy(record.germination_upper, germination_upper, strlen(germination_upper));
-				memcpy(record.transplanting_lower, transplanting_lower, strlen(transplanting_lower));
-				memcpy(record.transplanting_optimal, transplanting_optimal, strlen(transplanting_optimal));
-				memcpy(record.transplanting_upper, transplanting_upper, strlen(transplanting_upper));
-				memcpy(record.maturity_lower, maturity_lower, strlen(maturity_lower));
-				memcpy(record.maturity_optimal, maturity_optimal, strlen(maturity_optimal));
-				memcpy(record.maturity_upper, maturity_upper, strlen(maturity_upper));
-				memcpy(record.frost_tolerance, frost_tolerance, strlen(frost_tolerance));
-				memcpy(record.flowering, flowering, strlen(flowering));
-				memcpy(record.pollination_primary, pollination_primary, strlen(pollination_primary));
-				memcpy(record.pollination_secondary, pollination_secondary, strlen(pollination_secondary));
+			(void) init_record(&record);
+			memcpy(record.plant_name, plant_name, strlen(plant_name));
+			memcpy(record.latin_name, latin_name, strlen(latin_name));
+			memcpy(record.height, height, strlen(height));
+			memcpy(record.width, width, strlen(width));
+			memcpy(record.planting_depth, planting_depth, strlen(planting_depth));
+			memcpy(record.seed_size, seed_size, strlen(seed_size));
+			memcpy(record.seed_need_light, seed_need_light, strlen(seed_need_light));
+			memcpy(record.seed_scarification, seed_scarification, strlen(seed_scarification));
+			memcpy(record.ph, ph, strlen(ph));
+			memcpy(record.ec, ec, strlen(ec));
+			memcpy(record.day_light_interval, day_light_interval, strlen(day_light_interval));
+			memcpy(record.photoperiod_hours, photoperiod_hours, strlen(photoperiod_hours));
+			memcpy(record.light_lower, light_lower, strlen(light_lower));
+			memcpy(record.light_optimal, light_optimal, strlen(light_optimal));
+			memcpy(record.light_upper, light_upper, strlen(light_upper));
+			memcpy(record.nitrogen_lower, nitrogen_lower, strlen(nitrogen_lower));
+			memcpy(record.nitrogen_optimal, nitrogen_optimal, strlen(nitrogen_optimal));
+			memcpy(record.nitrogen_upper, nitrogen_upper, strlen(nitrogen_upper));
+			memcpy(record.phosphorus_lower, phosphorus_lower, strlen(phosphorus_lower));
+			memcpy(record.phosphorus_optimal, phosphorus_optimal, strlen(phosphorus_optimal));
+			memcpy(record.phosphorus_upper, phosphorus_upper, strlen(phosphorus_upper));
+			memcpy(record.potassium_lower, potassium_lower, strlen(potassium_lower));
+			memcpy(record.potassium_optimal, potassium_optimal, strlen(potassium_optimal));
+			memcpy(record.potassium_upper, potassium_upper, strlen(potassium_upper));
+			memcpy(record.germination_lower, germination_lower, strlen(germination_lower));
+			memcpy(record.germination_normal, germination_normal, strlen(germination_normal));
+			memcpy(record.germination_upper, germination_upper, strlen(germination_upper));
+			memcpy(record.transplanting_lower, transplanting_lower, strlen(transplanting_lower));
+			memcpy(record.transplanting_optimal, transplanting_optimal, strlen(transplanting_optimal));
+			memcpy(record.transplanting_upper, transplanting_upper, strlen(transplanting_upper));
+			memcpy(record.maturity_lower, maturity_lower, strlen(maturity_lower));
+			memcpy(record.maturity_optimal, maturity_optimal, strlen(maturity_optimal));
+			memcpy(record.maturity_upper, maturity_upper, strlen(maturity_upper));
+			memcpy(record.frost_tolerance, frost_tolerance, strlen(frost_tolerance));
+			memcpy(record.flowering, flowering, strlen(flowering));
+			memcpy(record.pollination_primary, pollination_primary, strlen(pollination_primary));
+			memcpy(record.pollination_secondary, pollination_secondary, strlen(pollination_secondary));
 
-				n = ghdb_update(&record);
-				fprintf(stderr, "tsv_import: ghdb_update=%d\n", n);
-			}
-/*		}*/
-
-		//free(line);
+			n = ghdb_update(&record);
+//			fprintf(stderr, "tsv_import: ghdb_update=%d\n", n);
+		}
 		line[0] = '\0';
 	}
 	fclose(file);
