@@ -43,17 +43,20 @@ int formscrn(struct FIELD fields[], int num_fields)
 	struct LABEL label = { -1, -1, -1, 0, "" };
 	struct VALUE value = { -1, -1, -1, 0, "", "" };
 	struct FIELD field = { label, value };
+	
 	/* initialize the fields */
 	for (int i=0; i<num_fields; i++)
 	{
 		fields[i] = field;
 	}
+	
 	if (has_colors())
 	{
 		(void) start_color();
 		(void) init_pair(1, COLOR_YELLOW, COLOR_BLACK);
 		(void) attrset(COLOR_PAIR(1));
 	}
+	
 	/* set up the fields */
 	fields[PLANT_NAME_FIELD].label.y = 1;
 	fields[PLANT_NAME_FIELD].label.x = 5;
