@@ -45,10 +45,7 @@ int rtof(struct FIELD fields[], int num_fields, struct RECORD *record)
 	strcpy(fields[MATURITY_LOWER_FIELD].value.c_value, record->maturity_lower);
 	strcpy(fields[MATURITY_OPTIMAL_FIELD].value.c_value, record->maturity_optimal);
 	strcpy(fields[MATURITY_UPPER_FIELD].value.c_value, record->maturity_upper);
-	strcpy(fields[KNOTTS_MATURITY_LOWER_FIELD].value.c_value, record->knotts_maturity_lower);
-	strcpy(fields[KNOTTS_UPPER_FIELD].value.c_value, record->knotts_upper);
-	strcpy(fields[KNOTTS_FROST_TOLERANCE_FIELD].value.c_value, record->knotts_frost_tolerance);
-	strcpy(fields[KNOTTS_TRANSPLANTABLE_FIELD].value.c_value, record->knotts_transplantable);
+	strcpy(fields[FROST_TOLERANCE_FIELD].value.c_value, record->frost_tolerance);
 	strcpy(fields[FLOWERING_FIELD].value.c_value, record->flowering);
 	strcpy(fields[POLLINATION_PRIMARY_FIELD].value.c_value, record->pollination_primary);
 	strcpy(fields[POLLINATION_SECONDARY_FIELD].value.c_value, record->pollination_secondary);
@@ -95,10 +92,7 @@ int ftor(struct FIELD fields[], int num_fields, struct RECORD *record)
 	strcpy(record->maturity_lower, fields[MATURITY_LOWER_FIELD].value.c_value);
 	strcpy(record->maturity_optimal, fields[MATURITY_OPTIMAL_FIELD].value.c_value);
 	strcpy(record->maturity_upper, fields[MATURITY_UPPER_FIELD].value.c_value);
-	strcpy(record->knotts_maturity_lower, fields[KNOTTS_MATURITY_LOWER_FIELD].value.c_value);
-	strcpy(record->knotts_upper, fields[KNOTTS_UPPER_FIELD].value.c_value);
-	strcpy(record->knotts_frost_tolerance, fields[KNOTTS_FROST_TOLERANCE_FIELD].value.c_value);
-	strcpy(record->knotts_transplantable, fields[KNOTTS_TRANSPLANTABLE_FIELD].value.c_value);
+	strcpy(record->frost_tolerance, fields[FROST_TOLERANCE_FIELD].value.c_value);
 	strcpy(record->flowering, fields[FLOWERING_FIELD].value.c_value);
 	strcpy(record->pollination_primary, fields[POLLINATION_PRIMARY_FIELD].value.c_value);
 	strcpy(record->pollination_secondary, fields[POLLINATION_SECONDARY_FIELD].value.c_value);

@@ -34,6 +34,7 @@ char *getfld(const int y, const int x, const int l)
 	field = malloc(l + 1);
 	if (field == NULL)
 	{
+		(void) endwin();
 		exit(EXIT_FAILURE);
 	}
 	char *f = field;

@@ -266,6 +266,7 @@ int ghdb_delete(struct RECORD *record)
 	pk = malloc(PLANT_NAME_LENGTH + 1);
 	if (pk == NULL)
 	{
+		(void) endwin();
 		exit(EXIT_FAILURE);
 	}
 	strncpy(pk, record->plant_name, PLANT_NAME_LENGTH);
@@ -284,6 +285,7 @@ int ghdb_delete(struct RECORD *record)
 	if (retcode == -1)
 	{
 		fprintf(stderr, "can't delete from database: %s\n", gdbm_strerror (gdbm_errno));
+		(void) endwin();
 		exit(EXIT_FAILURE);
 	}
 	else if (retcode == 1)
@@ -315,6 +317,7 @@ int ghdb_export()
 		{
 			fprintf(stderr, "ghdb_export: %s\n", strerror(errno));
 		}
+		(void) endwin();
 		exit(EXIT_FAILURE);
 	}
 	else
@@ -349,6 +352,7 @@ int ghdb_import()
 		{
 			fprintf(stderr, "ghdb_export: %s\n", strerror(errno));
 		}
+		(void) endwin();
 		exit(EXIT_FAILURE);
 	}
 	else
@@ -400,6 +404,7 @@ int ghdb_insert(struct RECORD *record)
 	pk = malloc(PLANT_NAME_LENGTH + 1);
 	if (pk == NULL)
 	{
+		(void) endwin();
 		exit(EXIT_FAILURE);
 	}
 	strncpy(pk, record->plant_name, PLANT_NAME_LENGTH);
@@ -421,6 +426,7 @@ int ghdb_insert(struct RECORD *record)
 	if (retcode == -1)
 	{
 		fprintf(stderr, "can't insert into database: %s\n", gdbm_strerror (gdbm_errno));
+		(void) endwin();
 		exit(EXIT_FAILURE);
 	}
 	else if (retcode == 1)
@@ -445,6 +451,7 @@ void *ghdb_open()
 	if (gdbm_file == NULL)
 	{
 		fprintf(stderr, "can't open the database: %s\n", gdbm_strerror (gdbm_errno));
+		(void) endwin();
 		exit(EXIT_FAILURE);
 	}
 
@@ -714,6 +721,7 @@ int ghdb_update(struct RECORD *record)
 	pk = malloc(PLANT_NAME_LENGTH + 1);
 	if (pk == NULL)
 	{
+		(void) endwin();
 		exit(EXIT_FAILURE);
 	}
 	strncpy(pk, record->plant_name, PLANT_NAME_LENGTH);
@@ -735,6 +743,7 @@ int ghdb_update(struct RECORD *record)
 	if (retcode == -1)
 	{
 		fprintf(stderr, "can't insert into database: %s\n", gdbm_strerror (gdbm_errno));
+		(void) endwin();
 		exit(EXIT_FAILURE);
 	}
 	else if (retcode == 1)
@@ -988,29 +997,11 @@ int init_record(struct RECORD *record)
 	}
 	record->maturity_upper[MATURITY_UPPER_LENGTH] = '\0';
 
-	for (i=0; i<KNOTTS_MATURITY_LOWER_LENGTH; i++)
+	for (i=0; i<FROST_TOLERANCE_LENGTH; i++)
 	{
-		record->knotts_maturity_lower[i]= ' ';
+		record->frost_tolerance[i]= ' ';
 	}
-	record->knotts_maturity_lower[KNOTTS_MATURITY_LOWER_LENGTH] = '\0';
-
-	for (i=0; i<KNOTTS_UPPER_LENGTH; i++)
-	{
-		record->knotts_upper[i]= ' ';
-	}
-	record->knotts_upper[KNOTTS_UPPER_LENGTH] = '\0';
-
-	for (i=0; i<KNOTTS_FROST_TOLERANCE_LENGTH; i++)
-	{
-		record->knotts_frost_tolerance[i]= ' ';
-	}
-	record->knotts_frost_tolerance[KNOTTS_FROST_TOLERANCE_LENGTH] = '\0';
-
-	for (i=0; i<KNOTTS_TRANSPLANTABLE_LENGTH; i++)
-	{
-		record->knotts_transplantable[i]= ' ';
-	}
-	record->knotts_transplantable[KNOTTS_TRANSPLANTABLE_LENGTH] = '\0';
+	record->frost_tolerance[FROST_TOLERANCE_LENGTH] = '\0';
 
 	for (i=0; i<FLOWERING_LENGTH; i++)
 	{
@@ -1045,20 +1036,54 @@ int tsv_export()
 	if (file == NULL)
 	{
 		fprintf(stderr, "Could not open %s: %s\n", filename, strerror(errno));
+		(void) endwin();
 		exit (EXIT_FAILURE);
 	}
-	fprintf(file, "PLANT_NAME\tLATIN_NAME\tHEIGHT\tWIDTH\tPLANTING_DEPTH\n");
+	fprintf(file, "PLANT_NAME\tLATIN_NAME\tHEIGHT\tWIDTH\tPLANTING_DEPTH\tSEED_SIZE\tSEED_NEED_LIGHT\tSEED_SCARIFICATION\tPH\tEC\tDAY_LIGHT_INTERVAL\tPHOTOPERIOD_HOURS\tLIGHT_LOWER\tLIGHT_OPTIMAL\tLIGHT_UPPER\tNITROGEN_LOWER\tNITROGEN_OPTIMAL\tNITROGEN_UPPER\tPHOSPHORUS_LOWER\tPHOSPHORUS_OPTIMAL\tPHOSPHORUS_UPPER\tPOTASSIUM_LOWER\tPOTASSIUM_OPTIMAL\tPOTASSIUM_UPPER\tGERMINATION_LOWER\tGERMINATION_NORMAL\tGERMINATION_UPPER\tTRANSPLANTING_LOWER\tTRANSPLANTING_OPTIMAL\tTRANSPLANTING_UPPER\tMATURITY_LOWER\tMATURITY_OPTIMAL\tMATURITY_UPPER\tFROST_TOLERANCE\tFLOWERING\tPOLLINATION_PRIMARY\tPOLLINATION_SECONDARY\n");
 
 	(void) init_record(&record);
 	n = ghdb_select_first(&record);
 	while (n == 0)
 	{
-		fprintf(file, "%s\t%s\t%s\t%s\t%s\n",
+		//			.   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5   6   7   
+		fprintf(file, "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 			trim(record.plant_name),
 			trim(record.latin_name),
 			trim(record.height),
 			trim(record.width),
-			trim(record.planting_depth));
+			trim(record.planting_depth),
+			trim(record.seed_size),
+			trim(record.seed_need_light),
+			trim(record.seed_scarification),
+			trim(record.ph),
+			trim(record.ec),
+			trim(record.day_light_interval),
+			trim(record.photoperiod_hours),
+			trim(record.light_lower),
+			trim(record.light_optimal),
+			trim(record.light_upper),
+			trim(record.nitrogen_lower),
+			trim(record.nitrogen_optimal),
+			trim(record.nitrogen_upper),
+			trim(record.phosphorus_lower),
+			trim(record.phosphorus_optimal),
+			trim(record.phosphorus_upper),
+			trim(record.potassium_lower),
+			trim(record.potassium_optimal),
+			trim(record.potassium_upper),
+			trim(record.germination_lower),
+			trim(record.germination_normal),
+			trim(record.germination_upper),
+			trim(record.transplanting_lower),
+			trim(record.transplanting_optimal),
+			trim(record.transplanting_upper),
+			trim(record.maturity_lower),
+			trim(record.maturity_optimal),
+			trim(record.maturity_upper),
+			trim(record.frost_tolerance),
+			trim(record.flowering),
+			trim(record.pollination_primary),
+			trim(record.pollination_secondary));
 
 		n = ghdb_select_next(&record);
 	}
@@ -1071,14 +1096,48 @@ int tsv_import()
 {
 	char filename[9] = "ghdb.tsv";
 	FILE *file = NULL;
-	char *line = NULL;
-	char plant_name[PLANT_NAME_LENGTH + 1];
-	char latin_name[LATIN_NAME_LENGTH + 1];
-	char height[HEIGHT_LENGTH + 1];
-	char width[WIDTH_LENGTH + 1];
-	char planting_depth[PLANTING_DEPTH_LENGTH + 1];
+	char line[100 * NUM_FIELDS];
+	
+	char plant_name[100];
+	char latin_name[100];
+	char height[100];
+	char width[100];
+	char planting_depth[100];
+	char seed_size[100];
+	char seed_need_light[100];
+	char seed_scarification[100];
+	char ph[100];
+	char ec[100];
+	char day_light_interval[100];
+	char photoperiod_hours[100];
+	char light_lower[100];
+	char light_optimal[100];
+	char light_upper[100];
+	char nitrogen_lower[100];
+	char nitrogen_optimal[100];
+	char nitrogen_upper[100];
+	char phosphorus_lower[100];
+	char phosphorus_optimal[100];
+	char phosphorus_upper[100];
+	char potassium_lower[100];
+	char potassium_optimal[100];
+	char potassium_upper[100];
+	char germination_lower[100];
+	char germination_normal[100];
+	char germination_upper[100];
+	char transplanting_lower[100];
+	char transplanting_optimal[100];
+	char transplanting_upper[100];
+	char maturity_lower[100];
+	char maturity_optimal[100];
+	char maturity_upper[100];
+	char frost_tolerance[100];
+	char flowering[100];
+	char pollination_primary[100];
+	char pollination_secondary[100];
+	
 	int n = 0;
-	size_t size = 0;
+//	size_t size = 0;
 	struct RECORD record;
 
 	errno = 0;
@@ -1086,20 +1145,131 @@ int tsv_import()
 	if (file == NULL)
 	{
 		fprintf(stderr, "Could not open %s: %s\n", filename, strerror(errno));
+		(void) endwin();
 		exit (EXIT_FAILURE);
 	}
-	while ((n = getline(&line, &size, file)) != -1)
+//	while ((n = getline(line, &size, file)) != -1)
+	while (fgets(line, sizeof(line), file) != NULL)
 	{
+		plant_name[0] = '\0';
+		latin_name[0] = '\0';
+		height[0] = '\0';
+		width[0] = '\0';
+		planting_depth[0] = '\0';
+		seed_size[0] = '\0';
+		seed_need_light[0] = '\0';
+		seed_scarification[0] = '\0';
+		ph[0] = '\0';
+		ec[0] = '\0';
+		day_light_interval[0] = '\0';
+		photoperiod_hours[0] = '\0';
+		light_lower[0] = '\0';
+		light_optimal[0] = '\0';
+		light_upper[0] = '\0';
+		nitrogen_lower[0] = '\0';
+		nitrogen_optimal[0] = '\0';
+		nitrogen_upper[0] = '\0';
+		phosphorus_lower[0] = '\0';
+		phosphorus_optimal[0] = '\0';
+		phosphorus_upper[0] = '\0';
+		potassium_lower[0] = '\0';
+		potassium_optimal[0] = '\0';
+		potassium_upper[0] = '\0';
+		germination_lower[0] = '\0';
+		germination_normal[0] = '\0';
+		germination_upper[0] = '\0';
+		transplanting_lower[0] = '\0';
+		transplanting_optimal[0] = '\0';
+		transplanting_upper[0] = '\0';
+		maturity_lower[0] = '\0';
+		maturity_optimal[0] = '\0';
+		maturity_upper[0] = '\0';
+		frost_tolerance[0] = '\0';
+		flowering[0] = '\0';
+		pollination_primary[0] = '\0';
+		pollination_secondary[0] = '\0';
 		fprintf(stderr, "tsv_import: getline=%d\n", n);
-		n = sscanf(line, "%s\t%s\t%s\t%s\t%s\n",
+//						   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5   6   7   
+		n = sscanf(line, "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 				plant_name,
 				latin_name,
 				height,
 				width,
-				planting_depth);
+				planting_depth,
+				seed_size,
+				seed_need_light,
+				seed_scarification,
+				ph,
+				ec,
+				day_light_interval,
+				photoperiod_hours,
+				light_lower,
+				light_optimal,
+				light_upper,
+				nitrogen_lower,
+				nitrogen_optimal,
+				nitrogen_upper,
+				phosphorus_lower,
+				phosphorus_optimal,
+				phosphorus_upper,
+				potassium_lower,
+				potassium_optimal,
+				potassium_upper,
+				germination_lower,
+				germination_normal,
+				germination_upper,
+				transplanting_lower,
+				transplanting_optimal,
+				transplanting_upper,
+				maturity_lower,
+				maturity_optimal,
+				maturity_upper,
+				frost_tolerance,
+				flowering,
+				pollination_primary,
+				pollination_secondary);
 		fprintf(stderr, "tsv_import: sscanf=%d\n", n);
-		if (n == 5)
+		fprintf(stderr, "tsv_import: plant_name=%s\n", plant_name);
+		fprintf(stderr, "tsv_import: latin_name=%s\n", latin_name);
+		fprintf(stderr, "tsv_import: height=%s\n", height);
+		fprintf(stderr, "tsv_import: width=%s\n", width);
+		fprintf(stderr, "planting_depth=%s\n", planting_depth);
+		fprintf(stderr, "seed_size=%s\n", seed_size);
+		fprintf(stderr, "seed_need_light=%s\n", seed_need_light);
+		fprintf(stderr, "seed_scarification=%s\n", seed_scarification);
+		fprintf(stderr, "ph=%s\n", ph);
+		fprintf(stderr, "ec=%s\n", ec);
+		fprintf(stderr, "day_light_interval=%s\n", day_light_interval);
+		fprintf(stderr, "photoperiod_hours=%s\n", photoperiod_hours);
+		fprintf(stderr, "light_lower=%s\n", light_lower);
+		fprintf(stderr, "light_optimal=%s\n", light_optimal);
+		fprintf(stderr, "light_upper=%s\n", light_upper);
+		fprintf(stderr, "nitrogen_lower=%s\n", nitrogen_lower);
+		fprintf(stderr, "nitrogen_optimal=%s\n", nitrogen_optimal);
+		fprintf(stderr, "nitrogen_upper=%s\n", nitrogen_upper);
+		fprintf(stderr, "phosphorus_lower=%s\n", phosphorus_lower);
+		fprintf(stderr, "phosphorus_optimal=%s\n", phosphorus_optimal);
+		fprintf(stderr, "phosphorus_upper=%s\n", phosphorus_upper);
+		fprintf(stderr, "potassium_lower=%s\n", potassium_lower);
+		fprintf(stderr, "potassium_optimal=%s\n", potassium_optimal);
+		fprintf(stderr, "potassium_upper=%s\n", potassium_upper);
+		fprintf(stderr, "germination_lower=%s\n", germination_lower);
+		fprintf(stderr, "germination_normal=%s\n", germination_normal);
+		fprintf(stderr, "germination_upper=%s\n", germination_upper);
+		fprintf(stderr, "transplanting_lower=%s\n", transplanting_lower);
+		fprintf(stderr, "transplanting_optimal=%s\n", transplanting_optimal);
+		fprintf(stderr, "transplanting_upper=%s\n", transplanting_upper);
+		fprintf(stderr, "maturity_lower=%s\n", maturity_lower);
+		fprintf(stderr, "maturity_optimal=%s\n", maturity_optimal);
+		fprintf(stderr, "maturity_upper=%s\n", maturity_upper);
+		fprintf(stderr, "frost_tolerance=%s\n", frost_tolerance);
+		fprintf(stderr, "flowering=%s\n", flowering);
+		fprintf(stderr, "pollination_primary=%s\n", pollination_primary);
+		fprintf(stderr, "pollination_secondary=%s\n", pollination_secondary);
+		/*
+		if (n == NUM_FIELDS)
 		{
+			*/
 			n = strcmp("PLANT_NAME", plant_name);
 			fprintf(stderr, "tsv_import: strcmp=%d\n", n);
 			if (n != 0)
@@ -1110,13 +1280,46 @@ int tsv_import()
 				memcpy(record.height, height, strlen(height));
 				memcpy(record.width, width, strlen(width));
 				memcpy(record.planting_depth, planting_depth, strlen(planting_depth));
+				memcpy(record.seed_size, seed_size, strlen(seed_size));
+				memcpy(record.seed_need_light, seed_need_light, strlen(seed_need_light));
+				memcpy(record.seed_scarification, seed_scarification, strlen(seed_scarification));
+				memcpy(record.ph, ph, strlen(ph));
+				memcpy(record.ec, ec, strlen(ec));
+				memcpy(record.day_light_interval, day_light_interval, strlen(day_light_interval));
+				memcpy(record.photoperiod_hours, photoperiod_hours, strlen(photoperiod_hours));
+				memcpy(record.light_lower, light_lower, strlen(light_lower));
+				memcpy(record.light_optimal, light_optimal, strlen(light_optimal));
+				memcpy(record.light_upper, light_upper, strlen(light_upper));
+				memcpy(record.nitrogen_lower, nitrogen_lower, strlen(nitrogen_lower));
+				memcpy(record.nitrogen_optimal, nitrogen_optimal, strlen(nitrogen_optimal));
+				memcpy(record.nitrogen_upper, nitrogen_upper, strlen(nitrogen_upper));
+				memcpy(record.phosphorus_lower, phosphorus_lower, strlen(phosphorus_lower));
+				memcpy(record.phosphorus_optimal, phosphorus_optimal, strlen(phosphorus_optimal));
+				memcpy(record.phosphorus_upper, phosphorus_upper, strlen(phosphorus_upper));
+				memcpy(record.potassium_lower, potassium_lower, strlen(potassium_lower));
+				memcpy(record.potassium_optimal, potassium_optimal, strlen(potassium_optimal));
+				memcpy(record.potassium_upper, potassium_upper, strlen(potassium_upper));
+				memcpy(record.germination_lower, germination_lower, strlen(germination_lower));
+				memcpy(record.germination_normal, germination_normal, strlen(germination_normal));
+				memcpy(record.germination_upper, germination_upper, strlen(germination_upper));
+				memcpy(record.transplanting_lower, transplanting_lower, strlen(transplanting_lower));
+				memcpy(record.transplanting_optimal, transplanting_optimal, strlen(transplanting_optimal));
+				memcpy(record.transplanting_upper, transplanting_upper, strlen(transplanting_upper));
+				memcpy(record.maturity_lower, maturity_lower, strlen(maturity_lower));
+				memcpy(record.maturity_optimal, maturity_optimal, strlen(maturity_optimal));
+				memcpy(record.maturity_upper, maturity_upper, strlen(maturity_upper));
+				memcpy(record.frost_tolerance, frost_tolerance, strlen(frost_tolerance));
+				memcpy(record.flowering, flowering, strlen(flowering));
+				memcpy(record.pollination_primary, pollination_primary, strlen(pollination_primary));
+				memcpy(record.pollination_secondary, pollination_secondary, strlen(pollination_secondary));
+
 				n = ghdb_update(&record);
 				fprintf(stderr, "tsv_import: ghdb_update=%d\n", n);
 			}
-		}
+/*		}*/
 
-		free(line);
-		line = NULL;
+		//free(line);
+		line[0] = '\0';
 	}
 	fclose(file);
 

@@ -12,13 +12,11 @@ int keymouse(struct FIELD fields[], int num_fields)
 	int button_shift = 0;
 	MEVENT mevent = { 0, 0, 0, 0, 0 };
 	(void) getmouse(&mevent);
-
+/*
 	fprintf(stderr, "keymouse: mevent.x is %d\n", mevent.x);
 	fprintf(stderr, "keymouse: mevent.y is %d\n", mevent.y);
 	fprintf(stderr, "keymouse: mevent.bstate is %d\n", mevent.bstate);
-	//fprintf(stderr, "keymouse: BUTTON1_PRESSED is %d\n", BUTTON1_PRESSED);
-	//fprintf(stderr, "keymouse: mevent.bstate & BUTTON1_PRESSED is %d\n", mevent.bstate & BUTTON1_PRESSED);
-
+*/
 	if ((mevent.bstate & BUTTON_ALT) != 0)
 	{
 		button_alt = 1;

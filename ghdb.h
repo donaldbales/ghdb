@@ -15,7 +15,7 @@ struct VALUE {
 	int l;
 	int fac;
 	char c_value[2001];
-	char o_value[2001]; // Later use to deter,mine if a record has changed
+	char o_value[2001]; // Later use to determine if a record has changed
 };
 
 struct UOM {
@@ -70,13 +70,10 @@ struct CURSOR {
 #define MATURITY_LOWER_FIELD          30
 #define MATURITY_OPTIMAL_FIELD        31
 #define MATURITY_UPPER_FIELD          32
-#define KNOTTS_MATURITY_LOWER_FIELD   33
-#define KNOTTS_UPPER_FIELD            34
-#define KNOTTS_FROST_TOLERANCE_FIELD  35
-#define KNOTTS_TRANSPLANTABLE_FIELD   36
-#define FLOWERING_FIELD               37
-#define POLLINATION_PRIMARY_FIELD     38
-#define POLLINATION_SECONDARY_FIELD   39
+#define FROST_TOLERANCE_FIELD         33
+#define FLOWERING_FIELD               34
+#define POLLINATION_PRIMARY_FIELD     35
+#define POLLINATION_SECONDARY_FIELD   36
 
 #define PLANT_NAME_LENGTH             30
 #define LATIN_NAME_LENGTH             30
@@ -111,10 +108,7 @@ struct CURSOR {
 #define MATURITY_LOWER_LENGTH          5
 #define MATURITY_OPTIMAL_LENGTH        5
 #define MATURITY_UPPER_LENGTH          5
-#define KNOTTS_MATURITY_LOWER_LENGTH   5
-#define KNOTTS_UPPER_LENGTH            5
-#define KNOTTS_FROST_TOLERANCE_LENGTH  3
-#define KNOTTS_TRANSPLANTABLE_LENGTH   5
+#define FROST_TOLERANCE_LENGTH         3
 #define FLOWERING_LENGTH               5
 #define POLLINATION_PRIMARY_LENGTH    30
 #define POLLINATION_SECONDARY_LENGTH  30
@@ -154,22 +148,19 @@ struct RECORD
 	char maturity_lower[MATURITY_LOWER_LENGTH + 1];
 	char maturity_optimal[MATURITY_OPTIMAL_LENGTH + 1];
 	char maturity_upper[MATURITY_UPPER_LENGTH + 1];
-	char knotts_maturity_lower[KNOTTS_MATURITY_LOWER_LENGTH + 1];
-	char knotts_upper[KNOTTS_UPPER_LENGTH + 1];
-	char knotts_frost_tolerance[KNOTTS_FROST_TOLERANCE_LENGTH + 1];
-	char knotts_transplantable[KNOTTS_TRANSPLANTABLE_LENGTH + 1];
+	char frost_tolerance[FROST_TOLERANCE_LENGTH + 1];
 	char flowering[FLOWERING_LENGTH + 1];
 	char pollination_primary[POLLINATION_PRIMARY_LENGTH + 1];
 	char pollination_secondary[POLLINATION_SECONDARY_LENGTH + 1];
 };
-#define NUM_FIELDS 40
+#define NUM_FIELDS 37
 
-//define                0x00000001 // PF1
+#define ADD_RECORD      0x00000001 // PF1
 #define FIRST_RECORD    0x00000002 // PF2
 #define FIND_RECORD     0x00000004 // PF3
 #define PREVIOUS_RECORD 0x00000008 // PF4
 #define NEXT_RECORD     0x00000010 // PF5
-//define                0x00000020 // PF6
+#define DELET_RECORD    0x00000020 // PF6
 #define IMPORT_MODE     0x00000040 // PF7
 #define EXPORT_MODE     0x00000080 // PF8
 //define                0x00000100 // PF9
