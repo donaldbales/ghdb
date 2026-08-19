@@ -74,11 +74,12 @@ These are the fields maintained and stored by the application into a GNU Databas
 You'll need to install gdbmtool in order to use the GDBM backup (PF19) and restore (PF20) functions.
 
 ##Links
+
 ###ncurses
 https://invisible-island.net/ncurses/ncurses.html
+
 ###GDBM
 https://www.gnu.org.ua/software/gdbm/manual/Copying.html
-
 
 ##Feedback
 You're welcome to contact me via email at don@donaldbales.com
