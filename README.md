@@ -8,7 +8,7 @@ I wrote it on an Arch64 machine, so I have no idea what defects may show up on o
 
 This was an exercise in refreshing my C skills after not using them for more than twenty years. While some may believe that every application needs to be web-based, I do not. Why? Cost! I wrote it from scratch in 114 hours, even though I haven't coded in C in more than 20 years. At, say $150/hr, it would cost $17,000 to build it. It can be accessed via ssh and run on any *nix system with no GUI installed. I wrote and run it on a $45 Raspberry Pi.
 
-Alternatively, writing this application as a web-base LAMP app, It would take 400 - 500 hours, and would need a database server and a web server. That's about $60,000 to $75,000 develop, and then the online hosting would cost at least $10,000 a year. Is the web-based apps hhuman interface better? Yes. But not that much better.
+Alternatively, writing this application as a web-base LAMP app, It would take 400 - 500 hours, and would need a database server and a web server. That's about $60,000 to $75,000 develop, and then the online hosting would cost at least $10,000 a year. Is the web-based app's human interface better? Yes. But not that much better.
 
 So a web-based application costs at least 4 time more that a terminal-based application. 
 
