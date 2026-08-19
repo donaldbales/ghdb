@@ -64,3 +64,6 @@ ghdb
 ncurses4.*
 trace
 *junk*
+.DS_Store
+coding.xlsx
+
