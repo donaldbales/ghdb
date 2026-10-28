@@ -164,11 +164,11 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 				break;
 	
 			case KEY_DOWN:
-				fprintf(stderr, "keyboard: %s\n", "KEY_DOWN");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_DOWN");
 				break;
 	
 			case KEY_UP:
-				fprintf(stderr, "keyboard: %s\n", "KEY_UP");
+//				fprintf(stderr, "keyboard: %s\n", "KEY_UP");
 				break;
 	
 			case KEY_LEFT:
@@ -233,8 +233,8 @@ unsigned keyboard(struct FIELD fields[], int num_fields, struct CURSOR *cursor, 
 				fprintf(stderr, "keyboard: %s\n", "KEY_F0");
 				break;
 	
-//			case KEY_F(1):
-				fprintf(stderr, "keyboard: %s\n", "KEY_F(1)");
+			case KEY_F(1):
+//				fprintf(stderr, "keyboard: %s\n", "KEY_F(1)");
 				return (INSERT_MODE);
 				break;
 	
